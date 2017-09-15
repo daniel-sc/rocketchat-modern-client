@@ -1,9 +1,12 @@
-package com.websocket;
+package com.rocketchat.modern_client;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
-import com.websocket.request.*;
+import com.rocketchat.modern_client.request.*;
+import com.rocketchat.modern_client.response.ChatMessage;
+import com.rocketchat.modern_client.response.GenericAnswer;
+import com.rocketchat.modern_client.response.Subscription;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 
@@ -75,8 +78,8 @@ public class RocketChatClient implements AutoCloseable {
         return result;
     }
 
-    public CompletableFuture<GenericAnswer> sendMessage(String msg, String rid) {
-        return send(new MethodRequest("sendMessage", new SendMessageParam(msg, rid)), r -> r);
+    public CompletableFuture<ChatMessage> sendMessage(String msg, String rid) {
+        return send(new MethodRequest("sendMessage", new SendMessageParam(msg, rid)), r -> gson.fromJson(gson.toJsonTree(r.result), ChatMessage.class));
     }
 
     // TODO refactor with further stream methods
@@ -125,6 +128,8 @@ public class RocketChatClient implements AutoCloseable {
                 LOG.log(Level.WARNING, "Could not close session: ", e);
             }
         }
+        futureResults.forEach((id, future) -> future.completeExceptionally(new RuntimeException("client closed")));
+        subscriptionResults.forEach((id, observerAndMapper) -> observerAndMapper.observable.onError(new RuntimeException("client closed")));
     }
 
     @ClientEndpoint
@@ -154,7 +159,9 @@ public class RocketChatClient implements AutoCloseable {
                 if (!complete) {
                     LOG.warning("future result was already completed: " + msgObject);
                 }
-            } else if (msgObject.fields != null && subscriptionResults.containsKey(msgObject.fields.get("eventName"))) {
+            } else if (msgObject.fields != null
+                    && msgObject.fields.get("eventName") != null
+                    && subscriptionResults.containsKey(msgObject.fields.get("eventName"))) {
                 subscriptionResults.get(msgObject.fields.get("eventName")).next(msgObject);
             } else {
                 LOG.warning("Unhandled message: " + message);

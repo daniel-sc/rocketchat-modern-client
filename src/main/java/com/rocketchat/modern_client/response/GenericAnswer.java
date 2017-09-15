@@ -1,4 +1,4 @@
-package com.websocket;
+package com.rocketchat.modern_client.response;
 
 import java.util.List;
 import java.util.Map;

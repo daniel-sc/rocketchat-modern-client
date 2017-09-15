@@ -1,6 +1,4 @@
-package com.websocket.request;
-
-import com.websocket.IRequest;
+package com.rocketchat.modern_client.request;
 
 import java.util.UUID;
 

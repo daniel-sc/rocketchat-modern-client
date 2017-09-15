@@ -1,4 +1,6 @@
-package com.websocket;
+package com.rocketchat.modern_client;
+
+import com.rocketchat.modern_client.response.GenericAnswer;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;

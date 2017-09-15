@@ -1,4 +1,4 @@
-package com.websocket.request;
+package com.rocketchat.modern_client.request;
 
 import java.nio.charset.Charset;
 import java.security.MessageDigest;

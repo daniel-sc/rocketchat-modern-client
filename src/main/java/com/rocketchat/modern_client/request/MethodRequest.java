@@ -1,6 +1,6 @@
-package com.websocket.request;
+package com.rocketchat.modern_client.request;
 
-public class MethodRequest extends com.websocket.request.Request {
+public class MethodRequest extends Request {
 
     public final String method;
 

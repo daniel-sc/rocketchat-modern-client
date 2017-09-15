@@ -1,5 +1,6 @@
-package com.websocket;
+package com.rocketchat.modern_client;
 
+import com.rocketchat.modern_client.response.GenericAnswer;
 import io.reactivex.subjects.PublishSubject;
 
 import java.util.function.Function;

@@ -1,4 +1,7 @@
-package com.websocket;
+package com.rocketchat.modern_client;
+
+import com.rocketchat.modern_client.response.ChatMessage;
+import com.rocketchat.modern_client.response.Subscription;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,7 +26,7 @@ public class Main {
                     .get();
             LOG.info("subscriptions: " + subscriptions);
             Subscription room = subscriptions.stream().filter(s -> s.name.equals(roomName)).findFirst().get();
-            GenericAnswer sendMessageResult = client.sendMessage("Test", room.rid).get();
+            ChatMessage sendMessageResult = client.sendMessage("Test", room.rid).get();
             LOG.info("sendMessageResult: " + sendMessageResult);
             AtomicInteger i1 = new AtomicInteger();
             client.streamRoomMessages(room.rid).forEachWhile(msg -> {

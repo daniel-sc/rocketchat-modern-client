@@ -1,4 +1,4 @@
-package com.websocket;
+package com.rocketchat.modern_client.response;
 
 public class User {
     public String _id;
