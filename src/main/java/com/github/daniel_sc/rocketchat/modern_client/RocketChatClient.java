@@ -1,12 +1,12 @@
-package com.rocketchat.modern_client;
+package com.github.daniel_sc.rocketchat.modern_client;
 
+import com.github.daniel_sc.rocketchat.modern_client.request.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
-import com.rocketchat.modern_client.request.*;
-import com.rocketchat.modern_client.response.ChatMessage;
-import com.rocketchat.modern_client.response.GenericAnswer;
-import com.rocketchat.modern_client.response.Subscription;
+import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
+import com.github.daniel_sc.rocketchat.modern_client.response.GenericAnswer;
+import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 

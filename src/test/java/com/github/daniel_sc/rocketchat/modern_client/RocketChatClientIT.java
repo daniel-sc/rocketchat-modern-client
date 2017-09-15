@@ -1,7 +1,7 @@
-package com.rocketchat.modern_client;
+package com.github.daniel_sc.rocketchat.modern_client;
 
-import com.rocketchat.modern_client.response.ChatMessage;
-import com.rocketchat.modern_client.response.Subscription;
+import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
+import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
 import io.reactivex.internal.operators.observable.ObservableReplay;
 import io.reactivex.observables.ConnectableObservable;
 import org.junit.After;

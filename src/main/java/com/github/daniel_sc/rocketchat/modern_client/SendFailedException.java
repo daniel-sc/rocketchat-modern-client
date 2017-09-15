@@ -1,4 +1,4 @@
-package com.rocketchat.modern_client;
+package com.github.daniel_sc.rocketchat.modern_client;
 
 import javax.websocket.SendResult;
 

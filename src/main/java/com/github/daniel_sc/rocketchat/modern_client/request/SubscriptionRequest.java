@@ -1,4 +1,4 @@
-package com.rocketchat.modern_client.request;
+package com.github.daniel_sc.rocketchat.modern_client.request;
 
 
 public class SubscriptionRequest extends Request {

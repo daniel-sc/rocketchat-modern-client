@@ -1,4 +1,4 @@
-package com.rocketchat.modern_client.request;
+package com.github.daniel_sc.rocketchat.modern_client.request;
 
 import java.nio.charset.Charset;
 import java.security.MessageDigest;

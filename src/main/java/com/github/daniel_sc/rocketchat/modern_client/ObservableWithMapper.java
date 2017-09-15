@@ -1,6 +1,6 @@
-package com.rocketchat.modern_client;
+package com.github.daniel_sc.rocketchat.modern_client;
 
-import com.rocketchat.modern_client.response.GenericAnswer;
+import com.github.daniel_sc.rocketchat.modern_client.response.GenericAnswer;
 import io.reactivex.subjects.PublishSubject;
 
 import java.util.function.Function;

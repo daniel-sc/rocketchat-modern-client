@@ -1,4 +1,4 @@
-package com.rocketchat.modern_client.response;
+package com.github.daniel_sc.rocketchat.modern_client.response;
 
 import java.util.List;
 import java.util.Map;
