@@ -21,30 +21,50 @@ When this is completed, you should be able to include the client as Maven depend
 
 ## Usage
 
-Connect and login:
-```java
-CompletableFuture<String> loginToken = subscriptions = client.connect()
-    .thenCompose(session -> client.login(USER, PASSWORD));
-```
-
 Get subscriptions/rooms:
 ```java
-List<Subscription> subscriptions = loginToken
-    .thenCompose(token -> client.getSubscriptions())
-    .join();
+try(RocketChatClient client = new RocketChatClient("wss://demo.rocket.chat:443/websocket", USERNAME, PASSWORD)) {
+    List<Subscription> subscriptions = client.getSubscriptions().join();
+}
 ```
 
 Send message:
 ```java
-ChatMessage msg = loginToken
-    .thenCompose(token -> client.sendMessage("Your message", roomId))
-    .join();
+try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+    ChatMessage msg = client.sendMessage("Your message", roomId).join();
+}
 ```
 
 Stream/read messages:
 ```java
-Observable<ChatMessage> msgStream = loginToken
-    .thenApply(token -> client.streamRoomMessages(roomId))
-    .join();
-msgStream.forEach(msg -> System.out.println("received msg: " + msg));
+try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+    Observable<ChatMessage> msgStream = client.streamRoomMessages(roomId).join();
+    msgStream.forEach(msg -> System.out.println("received msg: " + msg));
+}
+```
+
+## Websocket API
+This client ships with [Tyrus](https://github.com/tyrus-project/tyrus)
+websocket reference implementation.
+
+If you like, you can replace the websocket library with any 
+other JSR-356 complient implementation of [WebSocket Server API](https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api).
+Just update your `pom.xml` as follows:
+```xml
+<dependency>
+    <groupId>com.github.daniel-sc</groupId>
+    <artifactId>rocketchat-modern-client</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.glassfish.tyrus.bundles</groupId>
+            <artifactId>tyrus-standalone-client-jdk</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+<dependency>
+    <groupId>some.websocket-api.impl</groupId>
+    <artifactId>some.websocket-api.impl</artifactId>
+    <version>VERSION</version>
+</dependency>
 ```

@@ -1,12 +1,12 @@
 package com.github.daniel_sc.rocketchat.modern_client;
 
 import com.github.daniel_sc.rocketchat.modern_client.request.*;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.reflect.TypeToken;
 import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
 import com.github.daniel_sc.rocketchat.modern_client.response.GenericAnswer;
 import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 
@@ -17,7 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,26 +28,29 @@ public class RocketChatClient implements AutoCloseable {
 
     private static final Logger LOG = Logger.getLogger(RocketChatClient.class.getName());
 
-    private final Gson gson = new Gson();
+    private static final Gson GSON = new Gson();
 
+    private static final Map<String, CompletableFutureWithMapper<?>> futureResults = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, ObservableSubjectWithMapper<?>> subscriptionResults = new ConcurrentHashMap<>();
+
+    private Session session;
     private final String url;
-    Session session;
     private final CompletableFuture<String> connectResult = new CompletableFuture<>();
-    private static final Map<String, CompletableFutureWithMapper<?>> futureResults = new HashMap<>();
-    private static final Map<String, ObservableWithMapper<?>> subscriptionResults = new ConcurrentHashMap<>();
+    private final CompletableFuture<String> login;
 
-
-    public RocketChatClient(String url) {
+    public RocketChatClient(String url, String user, String password) {
         this.url = url;
+        login = login(user, password);
+        LOG.fine("Parallelism: " + ForkJoinPool.getCommonPoolParallelism());
     }
 
-    public CompletableFuture<String> connect() {
+    protected CompletableFuture<String> connect() {
         if (!connectResult.isDone()) { // TODO check if connection in progress
             try {
                 LOG.info("connecting to " + url);
                 WSClient clientEndpoint = new WSClient();
                 session = ContainerProvider.getWebSocketContainer().connectToServer(clientEndpoint, URI.create(url));
-                LOG.info("created session: " + session);
+                LOG.fine("created session: " + session);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
@@ -53,64 +58,81 @@ public class RocketChatClient implements AutoCloseable {
         return connectResult;
     }
 
-    public CompletableFuture<String> login(String user, String password) {
-        return send(new MethodRequest("login", new LoginParam(user, password)),
-                r -> (String) r.resultAsMap().get("token"));
+    protected CompletableFuture<String> login(String user, String password) {
+        return connect().thenCompose(session -> sendDirect(new MethodRequest("login", new LoginParam(user, password)),
+                r -> (String) r.resultAsMap().get("token")));
     }
 
     public CompletableFuture<List<Subscription>> getSubscriptions() {
         return send(new MethodRequest("subscriptions/get"),
                 genericAnswer -> {
-                    JsonElement jsonElement = gson.toJsonTree(genericAnswer.resultAsList());
-                    return gson.fromJson(jsonElement, new TypeToken<List<Subscription>>() {
+                    JsonElement jsonElement = GSON.toJsonTree(genericAnswer.resultAsList());
+                    return GSON.fromJson(jsonElement, new TypeToken<List<Subscription>>() {
                     }.getType());
                 });
     }
 
-    protected <T> CompletableFutureWithMapper<T> send(IRequest request, Function<GenericAnswer, T> answerMapper) {
-        String id = request.getId();
+    protected <T> CompletableFuture<T> send(IRequest request, Function<GenericAnswer, T> answerMapper) {
+        return login.thenCompose(token -> sendDirect(request, answerMapper));
+
+    }
+
+    protected <T> CompletableFuture<T> sendDirect(IRequest request, Function<GenericAnswer, T> answerMapper) {
         CompletableFutureWithMapper<T> result = new CompletableFutureWithMapper<>(answerMapper);
-        futureResults.put(id, result);
-        String requestString = gson.toJson(request);
-        LOG.info("REQUEST: " + requestString);
-        session.getAsyncRemote().sendText(requestString,
-                sendResult -> handleSendResult(sendResult, result));
+        futureResults.put(request.getId(), result);
+        String requestString = GSON.toJson(request);
+        LOG.fine("REQUEST: " + requestString);
+        session.getAsyncRemote().sendText(requestString, sendResult -> handleSendResult(sendResult, result));
         return result;
     }
 
     public CompletableFuture<ChatMessage> sendMessage(String msg, String rid) {
-        return send(new MethodRequest("sendMessage", new SendMessageParam(msg, rid)), r -> gson.fromJson(gson.toJsonTree(r.result), ChatMessage.class));
+        MethodRequest request = new MethodRequest("sendMessage", new SendMessageParam(msg, rid));
+        return send(request, r -> GSON.fromJson(GSON.toJsonTree(r.result), ChatMessage.class));
     }
 
-    // TODO refactor with further stream methods
+
+    /**
+     * Subscribes to chat room messages. Subscription is automatically managed,
+     * i.e. the chat room subscription starts when the first subscriber is attached
+     * to he subject and the subscription is cancelled once the last subscriber of
+     * the subject is disposed.
+     *
+     * @param rid room id
+     * @return lazily initialized stream of chat room messages
+     */
     public Observable<ChatMessage> streamRoomMessages(String rid) {
-        return Observable.defer(() -> {
-            if (subscriptionResults.containsKey(rid)) {
-                return (Observable<ChatMessage>) subscriptionResults.get(rid).observable;
-            }
-            PublishSubject<ChatMessage> observableSource = PublishSubject.create();
-
-            subscriptionResults.put(rid, new ObservableWithMapper<>(observableSource,
-                    r -> gson.fromJson(gson.toJsonTree(((List<?>) r.fields.get("args")).get(0)), ChatMessage.class)));
-
+        // TODO refactor with further stream methods
+        subscriptionResults.computeIfAbsent(rid, roomId -> {
+            LOG.fine("creating new subscription observable");
             SubscriptionRequest request = new SubscriptionRequest("stream-room-messages", rid, false);
-            send(request, Function.identity()).handleAsync((r, error) -> {
-                if (error != null) {
-                    observableSource.onError(error);
-                }
-                return CompletableFuture.completedFuture(error);
-            });
-            return observableSource.doFinally(() -> {
-                LOG.info("cancelling subscription");
-                send(new UnsubscribeRequest(request.getId()), Function.identity()).handleAsync((r, error) -> {
-                    if (error != null) {
-                        LOG.log(Level.WARNING, "Failed to unsubscribe: ", error);
-                    }
-                    subscriptionResults.remove(rid);
-                    return CompletableFuture.completedFuture(r);
-                });
-            }).onTerminateDetach();
-        }).onTerminateDetach();
+            PublishSubject<ChatMessage> subject = PublishSubject.create();
+            Observable<ChatMessage> observable = subject.doFinally(() -> {
+                LOG.fine("cancelling subscription");
+                send(new UnsubscribeRequest(request.getId()), Function.identity())
+                        .handleAsync((r, error) -> {
+                            LOG.fine("handling unsubscribe: result=" + r + ", error=" + error);
+                            if (error != null) {
+                                LOG.log(Level.WARNING, "Failed to unsubscribe: ", error);
+                            }
+                            subscriptionResults.remove(rid);
+                            return r;
+                        });
+            }).share();
+
+            send(request, Function.identity())
+                    .handleAsync((r, error) -> {
+                        LOG.fine("handling subscribe: result=" + r + ", error=" + error);
+                        if (error != null) {
+                            subject.onError(error);
+                        }
+                        return r;
+                    });
+
+            return new ObservableSubjectWithMapper<>(subject, observable,
+                    r -> GSON.fromJson(GSON.toJsonTree(((List<?>) r.fields.get("args")).get(0)), ChatMessage.class));
+        });
+        return (Observable<ChatMessage>) subscriptionResults.get(rid).getObservable();
     }
 
     private static void handleSendResult(SendResult sendResult, CompletableFuture<?> result) {
@@ -121,6 +143,7 @@ public class RocketChatClient implements AutoCloseable {
 
     @Override
     public void close() {
+        LOG.info("closing client.."); // TODO fine
         if (session != null) {
             try {
                 session.close();
@@ -129,7 +152,7 @@ public class RocketChatClient implements AutoCloseable {
             }
         }
         futureResults.forEach((id, future) -> future.completeExceptionally(new RuntimeException("client closed")));
-        subscriptionResults.forEach((id, observerAndMapper) -> observerAndMapper.observable.onError(new RuntimeException("client closed")));
+        subscriptionResults.forEach((id, observerAndMapper) -> observerAndMapper.getSubject().onError(new RuntimeException("client closed")));
     }
 
     @ClientEndpoint
@@ -142,19 +165,17 @@ public class RocketChatClient implements AutoCloseable {
         @OnMessage
         public void onMessage(String message) {
             LOG.info("Received msg: " + message);
-            GenericAnswer msgObject = gson.fromJson(message, GenericAnswer.class);
-            LOG.info("msg object: " + msgObject);
+            GenericAnswer msgObject = GSON.fromJson(message, GenericAnswer.class);
             if (msgObject.server_id != null) {
-                LOG.info("sending connect");
-
+                LOG.fine("sending connect");
                 session.getAsyncRemote().sendText("{\"msg\": \"connect\",\"version\": \"1\",\"support\": [\"1\"]}", sendResult -> {
-                    LOG.info("sendresult: " + sendResult);
+                    LOG.fine("connect ack: " + sendResult.isOK());
                 });
             } else if ("connected".equals(msgObject.msg)) {
                 connectResult.complete(msgObject.session);
             } else if ("ping".equals(msgObject.msg)) {
                 session.getAsyncRemote().sendText("{\"msg\":\"ping\"}", result -> LOG.fine("sent pong: " + result.isOK()));
-            } else if (futureResults.containsKey(msgObject.id)) {
+            } else if (msgObject.id != null && futureResults.containsKey(msgObject.id)) {
                 boolean complete = futureResults.remove(msgObject.id).completeAndMap(msgObject);
                 if (!complete) {
                     LOG.warning("future result was already completed: " + msgObject);
