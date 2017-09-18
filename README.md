@@ -11,14 +11,13 @@ Make sure you have at least some rough understanding of [CompletableFuture](http
 and [RxJava](https://github.com/ReactiveX/RxJava) as these are used heavily for the client api.
 
 ## Setup
-Publishing via Maven Central is in progress: https://issues.sonatype.org/browse/OSSRH-34576 .
-When this is completed, you should be able to include the client as Maven dependency in your `pom.xml` via:
+Just include the client as Maven dependency in your `pom.xml` via:
 
 ```xml
 <dependency>
     <groupId>com.github.daniel-sc</groupId>
     <artifactId>rocketchat-modern-client</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -59,7 +58,7 @@ Just update your `pom.xml` as follows:
 <dependency>
     <groupId>com.github.daniel-sc</groupId>
     <artifactId>rocketchat-modern-client</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
     <exclusions>
         <exclusion>
             <groupId>org.glassfish.tyrus.bundles</groupId>

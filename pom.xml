@@ -88,17 +88,24 @@
                 </executions>
                 <configuration>
                     <skipITs>${skip.integration.tests}</skipITs>
+                    <argLine>${failsafeArgLine}</argLine>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.3.0</version>
+                <configuration>
+                    <sourceEncoding>UTF-8</sourceEncoding>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.7.9</version>
+                <configuration>
+                    <propertyName>failsafeArgLine</propertyName>
+                </configuration>
             </plugin>
         </plugins>
     </build>
