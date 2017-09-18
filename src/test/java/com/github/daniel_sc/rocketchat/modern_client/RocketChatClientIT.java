@@ -14,6 +14,8 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,7 +41,7 @@ public class RocketChatClientIT {
         for (Handler handler : Logger.getLogger("").getHandlers()) {
             handler.setLevel(Level.FINE);
         }
-        client = new RocketChatClient(URL, USER, PASSWORD);
+        client = new RocketChatClient(URL, USER, PASSWORD, Executors.newFixedThreadPool(2));
     }
 
     @After

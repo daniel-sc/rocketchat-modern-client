@@ -13,9 +13,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,11 +35,16 @@ public class RocketChatClient implements AutoCloseable {
     protected final String url;
     protected final CompletableFuture<String> connectResult = new CompletableFuture<>();
     protected final CompletableFuture<String> login;
+    protected final Executor executor;
 
     public RocketChatClient(String url, String user, String password) {
+        this(url, user, password, ForkJoinPool.commonPool());
+    }
+
+    public RocketChatClient(String url, String user, String password, Executor executor) {
         this.url = url;
+        this.executor = executor;
         login = login(user, password);
-        LOG.fine("Parallelism: " + ForkJoinPool.getCommonPoolParallelism());
     }
 
     protected CompletableFuture<String> connect() {
@@ -59,8 +62,8 @@ public class RocketChatClient implements AutoCloseable {
     }
 
     protected CompletableFuture<String> login(String user, String password) {
-        return connect().thenCompose(session -> sendDirect(new MethodRequest("login", new LoginParam(user, password)),
-                failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())));
+        return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", new LoginParam(user, password)),
+                failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
     }
 
     public CompletableFuture<List<Subscription>> getSubscriptions() {
@@ -82,7 +85,7 @@ public class RocketChatClient implements AutoCloseable {
     }
 
     protected <T> CompletableFuture<T> send(IRequest request, Function<GenericAnswer, T> answerMapper) {
-        return login.thenCompose(token -> sendDirect(request, answerMapper));
+        return login.thenComposeAsync(token -> sendDirect(request, answerMapper), executor);
 
     }
 
@@ -143,7 +146,7 @@ public class RocketChatClient implements AutoCloseable {
                                 LOG.log(Level.FINE, "Failed to unsubscribe: ", error);
                             }
                             return r;
-                        });
+                        }, executor);
             }).share();
 
             send(request, failOnError(Function.identity()))
@@ -153,7 +156,7 @@ public class RocketChatClient implements AutoCloseable {
                             subject.onError(error);
                         }
                         return r;
-                    });
+                    }, executor);
 
             return new ObservableSubjectWithMapper<>(subject, observable,
                     r -> GSON.fromJson(GSON.toJsonTree(((List<?>) r.fields.get("args")).get(0)), ChatMessage.class));
