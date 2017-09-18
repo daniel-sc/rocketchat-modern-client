@@ -189,7 +189,7 @@
 
     <scm>
         <connection>scm:git:git://github.com/daniel-sc/rocketchat-modern-client.git</connection>
-        <developerConnection>scm:git:ssh://github.com:daniel-sc/rocketchat-modern-client.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:daniel-sc/rocketchat-modern-client.git</developerConnection>
         <url>http://github.com/daniel-sc/rocketchat-modern-client/tree/master</url>
     </scm>
 
