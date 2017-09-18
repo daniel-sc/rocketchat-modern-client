@@ -1,5 +1,7 @@
 # Rocketchat modern client
 
+![Build status](https://api.travis-ci.org/daniel-sc/rocketchat-modern-client.svg?branch=master)
+
 This project aims to provide a simple java client for the [Rocket.Chat](https://rocket.chat) live chat api.
 The current focus is on ease of usability and solid core functionality over complete method coverage (PRs always welcome!).
 

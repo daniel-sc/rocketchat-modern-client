@@ -1,6 +1,7 @@
 package com.github.daniel_sc.rocketchat.modern_client;
 
 import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
+import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
 import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.internal.operators.observable.ObservableReplay;
@@ -12,6 +13,8 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
@@ -30,6 +33,10 @@ public class RocketChatClientIT {
 
     @Before
     public void setUp() {
+        Logger.getLogger(RocketChatClient.class.getName()).setLevel(Level.FINE);
+        for (Handler handler : Logger.getLogger("").getHandlers()) {
+            handler.setLevel(Level.FINE);
+        }
         client = new RocketChatClient(URL, USER, PASSWORD);
     }
 
@@ -130,9 +137,46 @@ public class RocketChatClientIT {
         }
     }
 
-    @Test(expected = Exception.class, timeout = 10000)
+    @Test(expected = Exception.class, timeout = DEFAULT_TIMEOUT)
     public void testNonExistingRoom() {
         ChatMessage result = client.sendMessage("test", "non existing room id").join();
         LOG.info("result=" + result);
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT)
+    public void testGetPermissions() {
+        List<Permission> permissions = client.getPermissions().join();
+        LOG.info("permissions: " + permissions);
+        assertNotNull(permissions);
+        assertTrue(permissions.size() > 0);
+        Permission first = permissions.get(0);
+        assertNotNull(first.id);
+        assertNotNull(first.loki);
+        assertNotNull(first.meta);
+        assertNotNull(first.roles);
+        assertNotNull(first.updatedAt);
+        assertNotNull(first.updatedAt.date);
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT, expected = Exception.class)
+    public void testConnectToWrongUrl() {
+        try (RocketChatClient c = new RocketChatClient("ws://localhost:3001", null, null)) {
+            fail("Expect client to fail construction!");
+        }
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT, expected = Exception.class)
+    public void testWrongCredentials() {
+        try (RocketChatClient c = new RocketChatClient(URL, USER, "wrongpassword")) {
+            c.sendMessage("test msg", "1").join();
+            fail("Expect client to fail construction!");
+        }
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT)
+    public void testDoubleClose() {
+        client.getPermissions().join();
+        client.close();
+        client.close();
     }
 }

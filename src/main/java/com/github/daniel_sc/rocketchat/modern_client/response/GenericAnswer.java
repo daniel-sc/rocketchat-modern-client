@@ -1,6 +1,9 @@
 package com.github.daniel_sc.rocketchat.modern_client.response;
 
-import java.util.List;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.util.Map;
 
 public class GenericAnswer {
@@ -11,16 +14,7 @@ public class GenericAnswer {
     public String collection;
     public Map<String, ?> fields;
     public Map<String, ?> error;
-    public Object result;
-
-    public Map<String, ?> resultAsMap() {
-        return (Map<String, ?>) result;
-    }
-
-    public List<?> resultAsList() {
-        return (List<?>) result;
-    }
-
+    public JsonElement result;
 
     @Override
     public String toString() {

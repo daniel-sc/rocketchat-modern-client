@@ -3,9 +3,9 @@ package com.github.daniel_sc.rocketchat.modern_client;
 import com.github.daniel_sc.rocketchat.modern_client.request.*;
 import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
 import com.github.daniel_sc.rocketchat.modern_client.response.GenericAnswer;
+import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
 import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
@@ -13,6 +13,7 @@ import io.reactivex.subjects.PublishSubject;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +27,11 @@ public class RocketChatClient implements AutoCloseable {
 
     private static final Logger LOG = Logger.getLogger(RocketChatClient.class.getName());
 
-    protected static final Gson GSON = new Gson();
+    protected static final Gson GSON = new GsonBuilder()
+            // parse dates from long:
+            .registerTypeAdapter(Date.class, (JsonDeserializer<Date>) (json, typeOfT, context) -> new Date(json.getAsJsonPrimitive().getAsLong()))
+            .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (date, type, jsonSerializationContext) -> new JsonPrimitive(date.getTime()))
+            .create();
 
     protected final Map<String, CompletableFutureWithMapper<?>> futureResults = new ConcurrentHashMap<>();
     protected final ConcurrentHashMap<String, ObservableSubjectWithMapper<?>> subscriptionResults = new ConcurrentHashMap<>();
@@ -58,13 +63,13 @@ public class RocketChatClient implements AutoCloseable {
 
     protected CompletableFuture<String> login(String user, String password) {
         return connect().thenCompose(session -> sendDirect(new MethodRequest("login", new LoginParam(user, password)),
-                failOnError(r -> (String) r.resultAsMap().get("token"))));
+                failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())));
     }
 
     public CompletableFuture<List<Subscription>> getSubscriptions() {
         return send(new MethodRequest("subscriptions/get"),
                 failOnError(genericAnswer -> {
-                    JsonElement jsonElement = GSON.toJsonTree(genericAnswer.resultAsList());
+                    JsonElement jsonElement = GSON.toJsonTree(genericAnswer.result);
                     return GSON.fromJson(jsonElement, new TypeToken<List<Subscription>>() {
                     }.getType());
                 }));
@@ -87,6 +92,12 @@ public class RocketChatClient implements AutoCloseable {
     public CompletableFuture<ChatMessage> sendMessage(String msg, String rid) {
         MethodRequest request = new MethodRequest("sendMessage", new SendMessageParam(msg, rid));
         return send(request, failOnError(r -> GSON.fromJson(GSON.toJsonTree(r.result), ChatMessage.class)));
+    }
+
+    public CompletableFuture<List<Permission>> getPermissions() {
+        return send(new MethodRequest("permissions/get"),
+                failOnError(r -> GSON.fromJson(GSON.toJsonTree(r.result), new TypeToken<List<Permission>>() {
+                }.getType())));
     }
 
     protected <T> Function<GenericAnswer, T> failOnError(Function<GenericAnswer, T> mapper) {
