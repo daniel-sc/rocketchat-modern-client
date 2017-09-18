@@ -2,6 +2,7 @@ package com.github.daniel_sc.rocketchat.modern_client.response;
 
 public class Subscription {
     public String name;
+    /** roomId */
     public String rid;
     public String _id;
 

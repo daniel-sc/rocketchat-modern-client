@@ -29,4 +29,12 @@ public class ObservableSubjectWithMapper<T> {
     public Subject<T> getSubject() {
         return subject;
     }
+
+    @Override
+    public String toString() {
+        return "ObservableSubjectWithMapper{" +
+                "mapper=" + mapper +
+                ", observable=" + observable +
+                '}';
+    }
 }

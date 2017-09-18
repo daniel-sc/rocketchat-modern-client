@@ -40,6 +40,8 @@ Stream/read messages:
 try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
     Observable<ChatMessage> msgStream = client.streamRoomMessages(roomId).join();
     msgStream.forEach(msg -> System.out.println("received msg: " + msg));
+    // block thread until you got enough messages.. (or don't use try-with and close client explicitly)
+    msgStream.dispose();
 }
 ```
 

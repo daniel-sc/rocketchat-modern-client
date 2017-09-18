@@ -2,12 +2,14 @@ package com.github.daniel_sc.rocketchat.modern_client;
 
 import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
 import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.internal.operators.observable.ObservableReplay;
 import io.reactivex.observables.ConnectableObservable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
@@ -54,8 +56,10 @@ public class RocketChatClientIT {
                 .thenCompose(room -> client.sendMessage("TEST modern sdk", room.rid))
                 .join();
 
+
         assertNotNull(msg);
         assertEquals("TEST modern sdk", msg.msg);
+        assertEquals(Collections.emptyMap(), client.futureResults);
     }
 
     @Test(timeout = DEFAULT_TIMEOUT)
@@ -68,7 +72,7 @@ public class RocketChatClientIT {
         // wrap in replay, so we can first send a message and won't miss this
         ConnectableObservable<ChatMessage> msgStream = ObservableReplay.createFrom(subscription.thenApply(room -> client.streamRoomMessages(room.rid))
                 .join());
-        msgStream.connect();
+        Disposable streamDispose = msgStream.connect();
 
         String msgText = "TEST modern sdk: stream input";
         subscription.thenCompose(room -> client.sendMessage(msgText, room.rid))
@@ -76,8 +80,11 @@ public class RocketChatClientIT {
 
 
         ChatMessage receivedMsg = msgStream.blockingFirst();
+        streamDispose.dispose();
+
         assertNotNull(receivedMsg);
         assertEquals(msgText, receivedMsg.msg);
+        assertEquals(Collections.emptyMap(), client.subscriptionResults);
     }
 
 
