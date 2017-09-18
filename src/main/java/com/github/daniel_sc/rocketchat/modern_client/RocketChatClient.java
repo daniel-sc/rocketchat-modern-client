@@ -1,10 +1,7 @@
 package com.github.daniel_sc.rocketchat.modern_client;
 
 import com.github.daniel_sc.rocketchat.modern_client.request.*;
-import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
-import com.github.daniel_sc.rocketchat.modern_client.response.GenericAnswer;
-import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
-import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
+import com.github.daniel_sc.rocketchat.modern_client.response.*;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import io.reactivex.Observable;
@@ -71,6 +68,15 @@ public class RocketChatClient implements AutoCloseable {
                 failOnError(genericAnswer -> {
                     JsonElement jsonElement = GSON.toJsonTree(genericAnswer.result);
                     return GSON.fromJson(jsonElement, new TypeToken<List<Subscription>>() {
+                    }.getType());
+                }));
+    }
+
+    public CompletableFuture<List<Room>> getRooms() {
+        return send(new MethodRequest("rooms/get"),
+                failOnError(genericAnswer -> {
+                    JsonElement jsonElement = GSON.toJsonTree(genericAnswer.result);
+                    return GSON.fromJson(jsonElement, new TypeToken<List<Room>>() {
                     }.getType());
                 }));
     }

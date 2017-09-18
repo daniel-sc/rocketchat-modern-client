@@ -2,6 +2,7 @@ package com.github.daniel_sc.rocketchat.modern_client;
 
 import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
 import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
+import com.github.daniel_sc.rocketchat.modern_client.response.Room;
 import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.internal.operators.observable.ObservableReplay;
@@ -25,9 +26,10 @@ public class RocketChatClientIT {
 
     private static final String PASSWORD = "testuserrocks";
     private static final String USER = "testuserrocks";
-    //private static final String URL = "wss://demo.rocket.chat:443/websocket";
-    private static final String URL = "ws://localhost:3000/websocket";
+    private static final String URL = "wss://demo.rocket.chat:443/websocket";
+    //private static final String URL = "ws://localhost:3000/websocket";
     private static final int DEFAULT_TIMEOUT = 10000;
+    public static final String DEFAULT_ROOM = "PRIVATETESTGROUP";
 
     private RocketChatClient client;
 
@@ -52,14 +54,22 @@ public class RocketChatClientIT {
 
         LOG.info("subscriptions: " + subscriptions);
         assertNotNull(subscriptions);
-        assertNotNull(subscriptions.stream().filter(s -> s.name.equalsIgnoreCase("PRIVATETESTGROUP")).findFirst().orElse(null));
+        assertNotNull(subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().orElse(null));
         assertNull(subscriptions.stream().filter(s -> s.name.equals("non existing group")).findFirst().orElse(null));
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT)
+    public void testGetRooms() {
+        List<Room> rooms = client.getRooms().join();
+
+        LOG.info("rooms: " + rooms);
+        assertNotNull(rooms);
     }
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testSendMessage() {
         ChatMessage msg = client.getSubscriptions()
-                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase("PRIVATETESTGROUP")).findFirst().get())
+                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get())
                 .thenCompose(room -> client.sendMessage("TEST modern sdk", room.rid))
                 .join();
 
@@ -73,7 +83,7 @@ public class RocketChatClientIT {
     public void testStreamMessages() throws InterruptedException {
 
         CompletableFuture<Subscription> subscription = client.getSubscriptions()
-                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase("PRIVATETESTGROUP")).findFirst().get());
+                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get());
 
 
         // wrap in replay, so we can first send a message and won't miss this
@@ -98,17 +108,17 @@ public class RocketChatClientIT {
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testReturnsSameInstance() {
         CompletableFuture<Subscription> subscription = client.getSubscriptions()
-                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase("PRIVATETESTGROUP")).findFirst().get());
+                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get());
         String rid = subscription.join().rid;
 
         assertEquals(client.streamRoomMessages(rid), client.streamRoomMessages(rid));
     }
 
-    @Test(timeout = DEFAULT_TIMEOUT)
+    @Test(timeout = DEFAULT_TIMEOUT * 2)
     public void testParallelStreamMessages() throws Exception {
 
         CompletableFuture<Subscription> subscription = client.getSubscriptions()
-                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase("PRIVATETESTGROUP")).findFirst().get());
+                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get());
         String rid = subscription.join().rid;
 
         // wrap in replay, so we can first send a message and won't miss this

@@ -12,6 +12,10 @@
     <description>Client SDK for https://rocket.chat employing Java 8 and reactive style.</description>
     <url>https://github.com/daniel-sc/rocketchat-modern-client</url>
 
+    <properties>
+        <skip.integration.tests>true</skip.integration.tests>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -70,6 +74,22 @@
                     <goals>deploy</goals>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.20.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skipITs>${skip.integration.tests}</skipITs>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -106,6 +126,18 @@
         </dependency>
 
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>integration-test</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <skip.integration.tests>false</skip.integration.tests>
+            </properties>
+        </profile>
+    </profiles>
 
     <licenses>
         <license>
