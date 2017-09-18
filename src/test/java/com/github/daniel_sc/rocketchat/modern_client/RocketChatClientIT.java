@@ -52,6 +52,7 @@ public class RocketChatClientIT {
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testGetSubscriptions() {
+        LOG.info("start testGetSubscriptions..");
         List<Subscription> subscriptions = client.getSubscriptions().join();
 
         LOG.info("subscriptions: " + subscriptions);
@@ -62,6 +63,7 @@ public class RocketChatClientIT {
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testGetRooms() {
+        LOG.info("start testGetRooms..");
         List<Room> rooms = client.getRooms().join();
 
         LOG.info("rooms: " + rooms);
@@ -70,11 +72,11 @@ public class RocketChatClientIT {
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testSendMessage() {
+        LOG.info("start testSendMessage..");
         ChatMessage msg = client.getSubscriptions()
                 .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get())
                 .thenCompose(room -> client.sendMessage("TEST modern sdk", room.rid))
                 .join();
-
 
         assertNotNull(msg);
         assertEquals("TEST modern sdk", msg.msg);
@@ -83,7 +85,7 @@ public class RocketChatClientIT {
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testStreamMessages() throws InterruptedException {
-
+        LOG.info("start testStreamMessages..");
         CompletableFuture<Subscription> subscription = client.getSubscriptions()
                 .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get());
 
@@ -97,7 +99,6 @@ public class RocketChatClientIT {
         subscription.thenCompose(room -> client.sendMessage(msgText, room.rid))
                 .join();
 
-
         ChatMessage receivedMsg = msgStream.blockingFirst();
         streamDispose.dispose();
 
@@ -109,6 +110,7 @@ public class RocketChatClientIT {
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testReturnsSameInstance() {
+        LOG.info("start testReturnsSameInstance..");
         CompletableFuture<Subscription> subscription = client.getSubscriptions()
                 .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get());
         String rid = subscription.join().rid;
@@ -118,7 +120,7 @@ public class RocketChatClientIT {
 
     @Test(timeout = DEFAULT_TIMEOUT * 2)
     public void testParallelStreamMessages() throws Exception {
-
+        LOG.info("start testParallelStreamMessages..");
         CompletableFuture<Subscription> subscription = client.getSubscriptions()
                 .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get());
         String rid = subscription.join().rid;
@@ -151,12 +153,14 @@ public class RocketChatClientIT {
 
     @Test(expected = Exception.class, timeout = DEFAULT_TIMEOUT)
     public void testNonExistingRoom() {
+        LOG.info("start testNonExistingRoom..");
         ChatMessage result = client.sendMessage("test", "non existing room id").join();
         LOG.info("result=" + result);
     }
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testGetPermissions() {
+        LOG.info("start testGetPermissions..");
         List<Permission> permissions = client.getPermissions().join();
         LOG.info("permissions: " + permissions);
         assertNotNull(permissions);
@@ -172,6 +176,7 @@ public class RocketChatClientIT {
 
     @Test(timeout = DEFAULT_TIMEOUT, expected = Exception.class)
     public void testConnectToWrongUrl() {
+        LOG.info("start testConnectToWrongUrl..");
         try (RocketChatClient c = new RocketChatClient("ws://localhost:3001", null, null)) {
             fail("Expect client to fail construction!");
         }
@@ -179,6 +184,7 @@ public class RocketChatClientIT {
 
     @Test(timeout = DEFAULT_TIMEOUT, expected = Exception.class)
     public void testWrongCredentials() {
+        LOG.info("start testWrongCredentials..");
         try (RocketChatClient c = new RocketChatClient(URL, USER, "wrongpassword")) {
             c.sendMessage("test msg", "1").join();
             fail("Expect client to fail construction!");
@@ -187,6 +193,7 @@ public class RocketChatClientIT {
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testDoubleClose() {
+        LOG.info("start testDoubleClose..");
         client.getPermissions().join();
         client.close();
         client.close();
