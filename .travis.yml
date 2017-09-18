@@ -2,4 +2,7 @@ language: java
 jdk:
   - oraclejdk8
 
-script: mvn test verify -B -Pintegration-test -DrepoToken=$coveralls_repo_token
+script: mvn test verify jacoco:report -B -Pintegration-test -DrepoToken=$coveralls_repo_token
+
+after_success:
+  - mvn coveralls:report
