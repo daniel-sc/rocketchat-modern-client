@@ -14,7 +14,6 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -30,7 +29,7 @@ public class RocketChatClientIT {
     private static final String USER = "testuserrocks";
     private static final String URL = "wss://demo.rocket.chat:443/websocket";
     //private static final String URL = "ws://localhost:3000/websocket";
-    private static final int DEFAULT_TIMEOUT = 30000;
+    private static final int DEFAULT_TIMEOUT = 20000;
     public static final String DEFAULT_ROOM = "PRIVATETESTGROUP";
 
     private RocketChatClient client;

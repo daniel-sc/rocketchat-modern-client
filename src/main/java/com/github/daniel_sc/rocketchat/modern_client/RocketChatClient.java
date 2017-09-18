@@ -31,7 +31,7 @@ public class RocketChatClient implements AutoCloseable {
     protected final Map<String, CompletableFutureWithMapper<?>> futureResults = new ConcurrentHashMap<>();
     protected final ConcurrentHashMap<String, ObservableSubjectWithMapper<?>> subscriptionResults = new ConcurrentHashMap<>();
 
-    protected Session session;
+    protected final CompletableFuture<Session> session = new CompletableFuture<>();
     protected final String url;
     protected final CompletableFuture<String> connectResult = new CompletableFuture<>();
     protected final CompletableFuture<String> login;
@@ -52,9 +52,10 @@ public class RocketChatClient implements AutoCloseable {
             try {
                 LOG.info("connecting to " + url);
                 WSClient clientEndpoint = new WSClient();
-                session = ContainerProvider.getWebSocketContainer().connectToServer(clientEndpoint, URI.create(url));
-                LOG.fine("created session: " + session);
+                session.complete(ContainerProvider.getWebSocketContainer().connectToServer(clientEndpoint, URI.create(url)));
+                LOG.fine("created session: " + session.join());
             } catch (Exception e) {
+                session.completeExceptionally(e);
                 throw new IllegalStateException(e);
             }
         }
@@ -94,7 +95,7 @@ public class RocketChatClient implements AutoCloseable {
         futureResults.put(request.getId(), result);
         String requestString = GSON.toJson(request);
         LOG.fine("REQUEST: " + requestString);
-        session.getAsyncRemote().sendText(requestString, sendResult -> handleSendResult(sendResult, result));
+        session.join().getAsyncRemote().sendText(requestString, sendResult -> handleSendResult(sendResult, result));
         return result;
     }
 
@@ -174,12 +175,10 @@ public class RocketChatClient implements AutoCloseable {
     @Override
     public void close() {
         LOG.fine("closing client..");
-        if (session != null) {
-            try {
-                session.close();
-            } catch (IOException e) {
-                LOG.log(Level.WARNING, "Could not close session: ", e);
-            }
+        try {
+            session.join().close();
+        } catch (IOException | CompletionException | CancellationException e) {
+            LOG.log(Level.WARNING, "Could not close session: ", e);
         }
         futureResults.forEach((id, future) -> {
             // this can happen for future results of cancelled subscriptions or pong messages..
@@ -208,12 +207,12 @@ public class RocketChatClient implements AutoCloseable {
             GenericAnswer msgObject = GSON.fromJson(message, GenericAnswer.class);
             if (msgObject.server_id != null) {
                 LOG.fine("sending connect");
-                session.getAsyncRemote().sendText("{\"msg\": \"connect\",\"version\": \"1\",\"support\": [\"1\"]}",
+                session.join().getAsyncRemote().sendText("{\"msg\": \"connect\",\"version\": \"1\",\"support\": [\"1\"]}",
                         sendResult -> LOG.fine("connect ack: " + sendResult.isOK()));
             } else if ("connected".equals(msgObject.msg)) {
                 connectResult.complete(msgObject.session);
             } else if ("ping".equals(msgObject.msg)) {
-                session.getAsyncRemote().sendText("{\"msg\":\"ping\"}",
+                session.join().getAsyncRemote().sendText("{\"msg\":\"ping\"}",
                         result -> LOG.fine("sent pong: " + result.isOK()));
             } else if (msgObject.id != null && futureResults.containsKey(msgObject.id)) {
                 boolean complete = futureResults.remove(msgObject.id).completeAndMap(msgObject);
