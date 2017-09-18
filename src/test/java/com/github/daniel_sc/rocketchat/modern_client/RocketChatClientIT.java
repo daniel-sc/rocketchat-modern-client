@@ -190,6 +190,15 @@ public class RocketChatClientIT {
         }
     }
 
+    @Test(timeout = DEFAULT_TIMEOUT, expected = Exception.class)
+    public void testNullPassword() {
+        LOG.info("start testWrongCredentials..");
+        try (RocketChatClient c = new RocketChatClient(URL, USER, null)) {
+            c.sendMessage("test msg", "1").join();
+            fail("Expect client to fail construction!");
+        }
+    }
+
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testDoubleClose() {
         LOG.info("start testDoubleClose..");
