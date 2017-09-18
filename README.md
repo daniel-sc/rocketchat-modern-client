@@ -1,6 +1,7 @@
 # Rocketchat modern client
 
-![Build status](https://api.travis-ci.org/daniel-sc/rocketchat-modern-client.svg?branch=master)
+[![Build Status](https://travis-ci.org/daniel-sc/rocketchat-modern-client.svg?branch=master)](https://travis-ci.org/daniel-sc/rocketchat-modern-client)
+[![Coverage Status](https://coveralls.io/repos/github/daniel-sc/rocketchat-modern-client/badge.svg?branch=master)](https://coveralls.io/github/daniel-sc/rocketchat-modern-client?branch=master)
 
 This project aims to provide a simple java client for the [Rocket.Chat](https://rocket.chat) live chat api.
 The current focus is on ease of usability and solid core functionality over complete method coverage (PRs always welcome!).
@@ -52,7 +53,7 @@ This client ships with [Tyrus](https://github.com/tyrus-project/tyrus)
 websocket reference implementation.
 
 If you like, you can replace the websocket library with any 
-other JSR-356 complient implementation of [WebSocket Server API](https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api).
+other JSR-356 compliant implementation of [WebSocket Server API](https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api).
 Just update your `pom.xml` as follows:
 ```xml
 <dependency>
@@ -71,4 +72,9 @@ Just update your `pom.xml` as follows:
     <artifactId>some.websocket-api.impl</artifactId>
     <version>VERSION</version>
 </dependency>
+```
+
+## Run integration tests
+```bash
+mvn clean install -Pintegration-test
 ```
