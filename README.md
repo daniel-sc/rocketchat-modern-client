@@ -37,6 +37,13 @@ try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
 }
 ```
 
+Send message with alias and avatar:
+```java
+try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+    ChatMessage msg = client.sendMessage("Your message", roomId, "Alias", "https://goo.gl/8afu6d").join();
+}
+```
+
 Stream/read messages:
 ```java
 try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
