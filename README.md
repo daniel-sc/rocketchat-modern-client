@@ -25,7 +25,7 @@ Just include the client as Maven dependency in your `pom.xml` via:
 
 Get subscriptions/rooms:
 ```java
-try(RocketChatClient client = new RocketChatClient("wss://demo.rocket.chat:443/websocket", USERNAME, PASSWORD)) {
+try(RocketChatClient client = new RocketChatClient("wss://open.rocket.chat:443/websocket", USERNAME, PASSWORD)) {
     List<Subscription> subscriptions = client.getSubscriptions().join();
 }
 ```

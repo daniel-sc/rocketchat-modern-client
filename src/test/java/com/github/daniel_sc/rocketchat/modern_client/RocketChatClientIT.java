@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,11 +28,11 @@ public class RocketChatClientIT {
     private static final Logger LOG = Logger.getLogger(RocketChatClientIT.class.getName());
 
     private static final String PASSWORD = "testuserrocks";
-    private static final String USER = "testuserrocks";
-    private static final String URL = "wss://demo.rocket.chat:443/websocket";
+    private static final String USER = "testuserrocks-0";
+    private static final String URL = "wss://open.rocket.chat:443/websocket";
     //private static final String URL = "ws://localhost:3000/websocket";
     private static final int DEFAULT_TIMEOUT = 20000;
-    public static final String DEFAULT_ROOM = "PRIVATETESTGROUP";
+    public static final String DEFAULT_ROOM = "privatetestgroup-0";
 
     private RocketChatClient client;
 
@@ -127,10 +129,12 @@ public class RocketChatClientIT {
         // wrap in replay, so we can first send a message and won't miss this
         ConnectableObservable<ChatMessage> msgStream1 = client.streamRoomMessages(rid).take(2).replay();
         msgStream1.connect();
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
         ConnectableObservable<ChatMessage> msgStream2 = client.streamRoomMessages(rid).take(4).replay();
         msgStream2.connect();
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 5; i++) {
             client.sendMessage("TEST parallel stream " + i, rid).join();
         }
 
@@ -145,7 +149,7 @@ public class RocketChatClientIT {
         Thread.sleep(2000);
 
         // send some more messages, that should not be received (except for ack!):
-        for (int i = 6; i < 10; i++) {
+        for (int i = 5; i < 8; i++) {
             client.sendMessage("TEST parallel stream " + i, rid).join();
         }
     }
@@ -166,8 +170,6 @@ public class RocketChatClientIT {
         assertTrue(permissions.size() > 0);
         Permission first = permissions.get(0);
         assertNotNull(first.id);
-        assertNotNull(first.loki);
-        assertNotNull(first.meta);
         assertNotNull(first.roles);
         assertNotNull(first.updatedAt);
         assertNotNull(first.updatedAt.date);
