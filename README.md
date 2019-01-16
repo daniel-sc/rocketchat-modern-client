@@ -48,11 +48,8 @@ Update message:
 ```java
 try {
     ChatMessage chatMessage = client.sendMessage("Your message", roomId).join();
-
     String edited = "~" + chatMessage.msg + "~"; // strikethrough original message
-
     new Scanner(System.in).nextLine(); // Wait ...
-
     ChatMessage editedMessage = client.updateMessage(edited, chatMessage._id).join();
     }
 ```

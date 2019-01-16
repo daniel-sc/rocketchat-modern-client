@@ -85,6 +85,32 @@ public class RocketChatClientIT {
     }
 
     @Test(timeout = DEFAULT_TIMEOUT)
+    public void testExtendedSendMessage() {
+        LOG.info("start testExtendedSendMessage..");
+        ChatMessage msg = client.getSubscriptions()
+                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get())
+                .thenCompose(room -> client.sendMessageExtendedParams("TEST modern sdk: with alias", room.rid, "My-Alias", null))
+                .join();
+
+        assertNotNull(msg);
+        assertEquals(Collections.emptyMap(), client.futureResults);
+    }
+
+
+    @Test(timeout = DEFAULT_TIMEOUT)
+    public void testUpdateMessage() {
+        LOG.info("start testUpdateMessage..");
+        ChatMessage msg = client.getSubscriptions()
+                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get())
+                .thenCompose(room -> client.sendMessage("TEST modern sdk (before update)", room.rid))
+                .thenCompose(originalMessage -> client.updateMessage("TEST modern sdk (after update)", originalMessage._id))
+                .join();
+
+        assertNull(msg); // update result is null!
+        assertEquals(Collections.emptyMap(), client.futureResults);
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT)
     public void testStreamMessages() throws InterruptedException {
         LOG.info("start testStreamMessages..");
         CompletableFuture<Subscription> subscription = client.getSubscriptions()
