@@ -17,7 +17,7 @@ Just include the client as Maven dependency in your `pom.xml` via:
 <dependency>
     <groupId>com.github.daniel-sc</groupId>
     <artifactId>rocketchat-modern-client</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.6</version>
 </dependency>
 ```
 
@@ -75,7 +75,7 @@ Just update your `pom.xml` as follows:
 <dependency>
     <groupId>com.github.daniel-sc</groupId>
     <artifactId>rocketchat-modern-client</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.6</version>
     <exclusions>
         <exclusion>
             <groupId>org.glassfish.tyrus.bundles</groupId>
