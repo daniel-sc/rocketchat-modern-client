@@ -40,8 +40,21 @@ try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
 Send message with alias and avatar:
 ```java
 try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
-    ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", "https://goo.gl/8afu6d").join();
+    ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", "https://goo.gl/8afu6d", null).join();
 }
+```
+
+
+Send message with alias and emoji:
+```java
+try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+    ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", null, ":e-mail:").join();
+}
+```
+
+_If you send both avatar and emoji, rocket chat client show only avatar._
+```
+ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", "https://goo.gl/8afu6d", ":e-mail:").join();
 ```
 
 Update message:
