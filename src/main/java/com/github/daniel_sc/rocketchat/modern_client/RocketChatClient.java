@@ -100,16 +100,16 @@ public class RocketChatClient implements AutoCloseable {
     }
 
     public CompletableFuture<ChatMessage> sendMessage(String msg, String rid) {
-        return sendMessageExtendedParams(msg, rid, null, null);
+        return sendMessageExtendedParams(msg, rid, null, null, null);
     }
 
-    public CompletableFuture<ChatMessage> sendMessageExtendedParams(String msg, String rid, String alias, String avatar) {
-        MethodRequest request = new MethodRequest("sendMessage", SendMessageParam.forSendMessage(msg, rid, alias, avatar));
+    public CompletableFuture<ChatMessage> sendMessageExtendedParams(String msg, String rid, String alias, String avatar, List<Attachment> attachments) {
+        MethodRequest request = new MethodRequest("sendMessage", SendMessageParam.forSendMessage(msg, rid, alias, avatar, attachments));
         return send(request, failOnError(r -> GSON.fromJson(GSON.toJsonTree(r.result), ChatMessage.class)));
     }
 
     public CompletableFuture<ChatMessage> updateMessage(String msg, String _id) {
-        MethodRequest request = new MethodRequest("updateMessage", SendMessageParam.forUpdate(_id, msg, null, null, null));
+        MethodRequest request = new MethodRequest("updateMessage", SendMessageParam.forUpdate(_id, msg, null, null, null, null));
         return send(request, failOnError(r -> GSON.fromJson(GSON.toJsonTree(r.result), ChatMessage.class)));
     }
 
