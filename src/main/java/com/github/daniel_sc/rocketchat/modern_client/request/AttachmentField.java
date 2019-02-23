@@ -15,12 +15,12 @@ public class AttachmentField {
 	public boolean _short = false;
 	
 	/**
-	 * The title of this field.
+	 * [REQUIRED] The title of this field.
 	 */
 	public final String title;
 	
 	/**
-	 * The value of this field, displayed underneath the title value.
+	 * [REQUIRED] The value of this field, displayed underneath the title value.
 	 */
 	public final String value;
 
@@ -29,13 +29,11 @@ public class AttachmentField {
 		this.value = value;
 	}
 	
-	/*
 	public AttachmentField(boolean _short, String title, String value) {
 		this._short = _short;
 		this.title = title;
 		this.value = value;
-	}		
-	*/
+	}
 
 	@Override
 	public String toString() {
