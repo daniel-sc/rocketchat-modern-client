@@ -37,8 +37,8 @@ public class AttachmentField {
 
 	@Override
 	public String toString() {
-		return "AttachmentField [title=" + title + ", value=" + value + "]";
-	}
+		return "AttachmentField [_short=" + _short + ", title=" + title + ", value=" + value + "]";
+	}		
 
 	
 }

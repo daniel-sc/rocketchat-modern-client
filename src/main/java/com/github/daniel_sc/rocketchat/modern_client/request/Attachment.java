@@ -41,17 +41,20 @@ public class Attachment {
 	/**
 	 * Name of the author.
 	 */
-	public String author_name = "";
+	@SerializedName("author_name")
+	public String authorName = "";
 	
 	/**
 	 * Providing this makes the author name clickable and points to this link.
 	 */
-	public String author_link = "";
+	@SerializedName("author_link")
+	public String authorLink = "";
 	
 	/**
 	 * Displays a tiny icon to the left of the Author’s name.
 	 */
-	public String author_icon = "";
+	@SerializedName("author_icon")
+	public String authorIcon = "";
 	
 	/**
 	 * Title to display for this attachment, displays under the author.
@@ -61,55 +64,41 @@ public class Attachment {
 	/**
 	 * Providing this makes the title clickable, pointing to this link.
 	 */
-	public String title_link = "";
+	@SerializedName("title_link")
+	public String titleLink = "";
 	
 	/**
 	 * When this is true, a download icon appears and clicking this saves the link to file.
 	 */
-	public boolean title_link_download = true;
+	@SerializedName("title_link_download")
+	public boolean titleLinkDownload = true;
 	
 	/**
 	 * The image to display, will be “big” and easy to see.
 	 */
-	public String image_url = "";
+	@SerializedName("image_url")
+	public String imageUrl = "";
 	
 	/**
 	 * Audio file to play, only supports what html audio does.
 	 */
-	public String audio_url = "";
+	@SerializedName("audio_url")
+	public String audioUrl = "";
 	
 	/**
 	 * Video file to play, only supports what html video does.
 	 */
-	public String video_url = "";
+	@SerializedName("video_url")
+	public String videoUrl = "";
 	
 	/**
 	 * An array of Attachment Field Objects.
 	 */
-	public List<AttachmentField> attachmentFields;
+	public List<AttachmentField> fields;
 	
 	public Attachment() {
 	}
-	
-	public Attachment(String color, String text, String thumbUrl, boolean collapsed, String author_name,
-			String author_link, String author_icon, String title, String title_link, boolean title_link_download,
-			String image_url, String audio_url, String video_url, List<AttachmentField> attachmentFields) {
-		this.color = color;
-		this.text = text;
-		this.thumbUrl = thumbUrl;
-		this.collapsed = collapsed;
-		this.author_name = author_name;
-		this.author_link = author_link;
-		this.author_icon = author_icon;
-		this.title = title;
-		this.title_link = title_link;
-		this.title_link_download = title_link_download;
-		this.image_url = image_url;
-		this.audio_url = audio_url;
-		this.video_url = video_url;
-		this.attachmentFields = attachmentFields;
-	}
-	
+
 	public String getColor() {
 		return color;
 	}
@@ -124,6 +113,14 @@ public class Attachment {
 
 	public void setText(String text) {
 		this.text = text;
+	}
+
+	public String getIso8601Date() {
+		return iso8601Date;
+	}
+
+	public void setIso8601Date(String iso8601Date) {
+		this.iso8601Date = iso8601Date;
 	}
 
 	public String getThumbUrl() {
@@ -142,28 +139,28 @@ public class Attachment {
 		this.collapsed = collapsed;
 	}
 
-	public String getAuthor_name() {
-		return author_name;
+	public String getAuthorName() {
+		return authorName;
 	}
 
-	public void setAuthor_name(String author_name) {
-		this.author_name = author_name;
+	public void setAuthorName(String authorName) {
+		this.authorName = authorName;
 	}
 
-	public String getAuthor_link() {
-		return author_link;
+	public String getAuthorLink() {
+		return authorLink;
 	}
 
-	public void setAuthor_link(String author_link) {
-		this.author_link = author_link;
+	public void setAuthorLink(String authorLink) {
+		this.authorLink = authorLink;
 	}
 
-	public String getAuthor_icon() {
-		return author_icon;
+	public String getAuthorIcon() {
+		return authorIcon;
 	}
 
-	public void setAuthor_icon(String author_icon) {
-		this.author_icon = author_icon;
+	public void setAuthorIcon(String authorIcon) {
+		this.authorIcon = authorIcon;
 	}
 
 	public String getTitle() {
@@ -174,62 +171,61 @@ public class Attachment {
 		this.title = title;
 	}
 
-	public String getTitle_link() {
-		return title_link;
+	public String getTitleLink() {
+		return titleLink;
 	}
 
-	public void setTitle_link(String title_link) {
-		this.title_link = title_link;
+	public void setTitleLink(String titleLink) {
+		this.titleLink = titleLink;
 	}
 
-	public boolean isTitle_link_download() {
-		return title_link_download;
+	public boolean isTitleLinkDownload() {
+		return titleLinkDownload;
 	}
 
-	public void setTitle_link_download(boolean title_link_download) {
-		this.title_link_download = title_link_download;
+	public void setTitleLinkDownload(boolean titleLinkDownload) {
+		this.titleLinkDownload = titleLinkDownload;
 	}
 
-	public String getImage_url() {
-		return image_url;
+	public String getImageUrl() {
+		return imageUrl;
 	}
 
-	public void setImage_url(String image_url) {
-		this.image_url = image_url;
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 
-	public String getAudio_url() {
-		return audio_url;
+	public String getAudioUrl() {
+		return audioUrl;
 	}
 
-	public void setAudio_url(String audio_url) {
-		this.audio_url = audio_url;
+	public void setAudioUrl(String audioUrl) {
+		this.audioUrl = audioUrl;
 	}
 
-	public String getVideo_url() {
-		return video_url;
+	public String getVideoUrl() {
+		return videoUrl;
 	}
 
-	public void setVideo_url(String video_url) {
-		this.video_url = video_url;
+	public void setVideoUrl(String videoUrl) {
+		this.videoUrl = videoUrl;
 	}
 
-	public List<AttachmentField> getAttachmentFields() {
-		return attachmentFields;
+	public List<AttachmentField> getFields() {
+		return fields;
 	}
 
-	public void setAttachmentFields(List<AttachmentField> attachmentFields) {
-		this.attachmentFields = attachmentFields;
+	public void setFields(List<AttachmentField> fields) {
+		this.fields = fields;
 	}
 
 	@Override
 	public String toString() {
-		return "Attachments [color=" + color + ", text=" + text + ", thumbUrl=" + thumbUrl + ", collapsed=" + collapsed
-				+ ", author_name=" + author_name + ", author_link=" + author_link + ", author_icon=" + author_icon
-				+ ", title=" + title + ", title_link=" + title_link + ", title_link_download=" + title_link_download
-				+ ", image_url=" + image_url + ", audio_url=" + audio_url + ", video_url=" + video_url + "]";
+		return "Attachment [color=" + color + ", text=" + text + ", iso8601Date=" + iso8601Date + ", thumbUrl="
+				+ thumbUrl + ", collapsed=" + collapsed + ", authorName=" + authorName + ", authorLink=" + authorLink
+				+ ", authorIcon=" + authorIcon + ", title=" + title + ", titleLink=" + titleLink
+				+ ", titleLinkDownload=" + titleLinkDownload + ", imageUrl=" + imageUrl + ", audioUrl=" + audioUrl
+				+ ", videoUrl=" + videoUrl + ", fields=" + fields + "]";
 	}
 	
-	
-
 }
