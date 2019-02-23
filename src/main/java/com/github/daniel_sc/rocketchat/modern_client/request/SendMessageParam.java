@@ -27,22 +27,30 @@ public class SendMessageParam {
      */
     public final String avatar;
     
-    public List<Attachment> attachments;
+    /**
+     * If provided, this will make the avatar on this message be an emoji.
+     */
+    public final String emoji;
+    
+    public List<Attachment> attachments;    
 
-    private SendMessageParam(String msg, String rid, String alias, String avatar, List<Attachment> attachments, String msgId) {
-        this.msg = msg;
-        this.rid = rid;
-        this.alias = alias;
-        this.avatar = avatar;
-        this.attachments = attachments;
-        this._id = msgId;
+    public SendMessageParam(String msg, String rid, String alias, String avatar, String emoji,
+			List<Attachment> attachments, String msgId) {
+		this.msg = msg;
+		this.rid = rid;
+		this.alias = alias;
+		this.avatar = avatar;
+		this.emoji = emoji;
+		this.attachments = attachments;
+		this._id = msgId;
+	}
+
+	public static SendMessageParam forSendMessage(String msg, String rid, String alias, String avatar, String emoji, List<Attachment> attachments) {
+        return new SendMessageParam(msg, rid, alias, avatar, emoji, attachments, UUID.randomUUID().toString());
     }
 
-    public static SendMessageParam forSendMessage(String msg, String rid, String alias, String avatar, List<Attachment> attachments) {
-        return new SendMessageParam(msg, rid, alias, avatar, attachments, UUID.randomUUID().toString());
+    public static SendMessageParam forUpdate(String msgId, String msg, String rid, String alias, String avatar, String emoji, List<Attachment> attachments) {
+        return new SendMessageParam(msg, rid, alias, avatar, emoji, attachments, msgId);
     }
 
-    public static SendMessageParam forUpdate(String msgId, String msg, String rid, String alias, String avatar, List<Attachment> attachments) {
-        return new SendMessageParam(msg, rid, alias, avatar, attachments, msgId);
-    }
 }
