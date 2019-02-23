@@ -1,5 +1,7 @@
 package com.github.daniel_sc.rocketchat.modern_client.request;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * {@link} https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage/#attachments-detail
  *
@@ -7,8 +9,9 @@ package com.github.daniel_sc.rocketchat.modern_client.request;
 public class AttachmentField {
 	
 	/**
-	 * Whether this field should be a short field.
+	 * Whether this field should be a short field.	 * 
 	 */
+	@SerializedName("short")
 	public boolean _short = false;
 	
 	/**
