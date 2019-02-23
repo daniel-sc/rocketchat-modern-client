@@ -1,6 +1,9 @@
 package com.github.daniel_sc.rocketchat.modern_client.request;
 
+import java.time.Instant;
 import java.util.List;
+
+import com.google.gson.annotations.SerializedName;
 
 /**
  * {@link} https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage/#attachments-detail
@@ -17,6 +20,13 @@ public class Attachment {
 	 * The text to display for this attachment, it is different than the message’s text.
 	 */
 	public String text = "";
+	
+	/**
+	 * Displays the time next to the text portion.
+	 * 2016-12-09T16:53:06.761Z
+	 */
+	@SerializedName("ts")
+	public String iso8601Date = Instant.now().toString();
 
 	/**
 	 * An image that displays to the left of the text, looks better when this is relatively small.
