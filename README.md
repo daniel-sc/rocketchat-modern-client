@@ -17,7 +17,7 @@ Just include the client as Maven dependency in your `pom.xml` via:
 <dependency>
     <groupId>com.github.daniel-sc</groupId>
     <artifactId>rocketchat-modern-client</artifactId>
-    <version>0.0.6</version>
+    <version>0.0.7</version>
 </dependency>
 ```
 
@@ -59,12 +59,12 @@ ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alia
 
 Update message:
 ```java
-try {
+try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
     ChatMessage chatMessage = client.sendMessage("Your message", roomId).join();
     String edited = "~" + chatMessage.msg + "~"; // strikethrough original message
     new Scanner(System.in).nextLine(); // Wait ...
     ChatMessage editedMessage = client.updateMessage(edited, chatMessage._id).join();
-    }
+}
 ```
 
 Stream/read messages:
@@ -83,28 +83,28 @@ try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
     List<Attachment> attachments = new ArrayList<Attachment>();
 
     Attachment a1 = new Attachment();        
-    a1.setColor("#0000ff");
-    a1.setIso8601Date("2001-02-03T04:05:06.789Z");
-    a1.setText("Test attachment message\nand next **line** ~~with~~ **mark-down** formatting\n:-) ...");
-    a1.setAuthorName("author");
-    a1.setAuthorIcon("https://avatars2.githubusercontent.com/u/0?s=400&v=4");
-    a1.setAuthorLink("https://github.com/");
-    a1.setTitle("Attachment test A1");
-    a1.setTitleLink("https://www.google.com/?q=Attachment%20test%20A1");
+    a1.color = "#0000ff";
+    a1.iso8601Date = "2001-02-03T04:05:06.789Z";
+    a1.text = "Test attachment message\nand next **line** ~~with~~ **mark-down** formatting\n:-) ...";
+    a1.authorName = "author";
+    a1.authorIcon = "https://avatars2.githubusercontent.com/u/0?s=400&v=4";
+    a1.authorLink = "https://github.com/";
+    a1.title = "Attachment test A1";
+    a1.titleLink = "https://www.google.com/?q=Attachment%20test%20A1";
     attachments.add(a1);
 
     Attachment a2 = new Attachment();
-    a2.setImageUrl("https://cdn3.iconfinder.com/data/icons/iconshock_developer/linux.png");        
+    a2.imageUrl = "https://cdn3.iconfinder.com/data/icons/iconshock_developer/linux.png";        
     attachments.add(a2);
             
     Attachment a3 = new Attachment();
-    a3.setColor("#00FF00");        
-    a3.setTitle("Project status");        
+    a3.color = "#00FF00";
+    a3.title = "Project status"; 
     List<AttachmentField> attachmentFields = new ArrayList<>();
     attachmentFields.add(new AttachmentField(true, "Status", "New"));
     attachmentFields.add(new AttachmentField(true, "Priority", "High"));    
     attachmentFields.add(new AttachmentField(true, "Tags", "Test, Chat"));
-    a3.setFields(attachmentFields);
+    a3.fields = attachmentFields;
     attachments.add(a3);
     ChatMessage msg = client.sendMessageExtendedParams(message, roomId, rcAlias, rcAvatar, rcEmoji, attachments).join();
 }
@@ -122,7 +122,7 @@ Just update your `pom.xml` as follows:
 <dependency>
     <groupId>com.github.daniel-sc</groupId>
     <artifactId>rocketchat-modern-client</artifactId>
-    <version>0.0.6</version>
+    <version>0.0.7</version>
     <exclusions>
         <exclusion>
             <groupId>org.glassfish.tyrus.bundles</groupId>

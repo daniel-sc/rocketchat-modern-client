@@ -74,7 +74,7 @@ public class Attachment {
 	public boolean titleLinkDownload = true;
 	
 	/**
-	 * The image to display, will be “big” and easy to see.
+	 * The image to display, will be "big" and easy to see.
 	 */
 	@SerializedName("image_url")
 	public String imageUrl = "";
@@ -95,129 +95,6 @@ public class Attachment {
 	 * An array of Attachment Field Objects.
 	 */
 	public List<AttachmentField> fields;
-	
-	public Attachment() {
-	}
-
-	public String getColor() {
-		return color;
-	}
-
-	public void setColor(String color) {
-		this.color = color;
-	}
-
-	public String getText() {
-		return text;
-	}
-
-	public void setText(String text) {
-		this.text = text;
-	}
-
-	public String getIso8601Date() {
-		return iso8601Date;
-	}
-
-	public void setIso8601Date(String iso8601Date) {
-		this.iso8601Date = iso8601Date;
-	}
-
-	public String getThumbUrl() {
-		return thumbUrl;
-	}
-
-	public void setThumbUrl(String thumbUrl) {
-		this.thumbUrl = thumbUrl;
-	}
-
-	public boolean isCollapsed() {
-		return collapsed;
-	}
-
-	public void setCollapsed(boolean collapsed) {
-		this.collapsed = collapsed;
-	}
-
-	public String getAuthorName() {
-		return authorName;
-	}
-
-	public void setAuthorName(String authorName) {
-		this.authorName = authorName;
-	}
-
-	public String getAuthorLink() {
-		return authorLink;
-	}
-
-	public void setAuthorLink(String authorLink) {
-		this.authorLink = authorLink;
-	}
-
-	public String getAuthorIcon() {
-		return authorIcon;
-	}
-
-	public void setAuthorIcon(String authorIcon) {
-		this.authorIcon = authorIcon;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getTitleLink() {
-		return titleLink;
-	}
-
-	public void setTitleLink(String titleLink) {
-		this.titleLink = titleLink;
-	}
-
-	public boolean isTitleLinkDownload() {
-		return titleLinkDownload;
-	}
-
-	public void setTitleLinkDownload(boolean titleLinkDownload) {
-		this.titleLinkDownload = titleLinkDownload;
-	}
-
-	public String getImageUrl() {
-		return imageUrl;
-	}
-
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
-	}
-
-	public String getAudioUrl() {
-		return audioUrl;
-	}
-
-	public void setAudioUrl(String audioUrl) {
-		this.audioUrl = audioUrl;
-	}
-
-	public String getVideoUrl() {
-		return videoUrl;
-	}
-
-	public void setVideoUrl(String videoUrl) {
-		this.videoUrl = videoUrl;
-	}
-
-	public List<AttachmentField> getFields() {
-		return fields;
-	}
-
-	public void setFields(List<AttachmentField> fields) {
-		this.fields = fields;
-	}
 
 	@Override
 	public String toString() {

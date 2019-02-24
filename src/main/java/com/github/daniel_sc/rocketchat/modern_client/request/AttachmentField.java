@@ -12,7 +12,7 @@ public class AttachmentField {
 	 * Whether this field should be a short field.	 * 
 	 */
 	@SerializedName("short")
-	public boolean _short = false;
+	public final boolean _short;
 	
 	/**
 	 * [REQUIRED] The title of this field.
@@ -25,8 +25,7 @@ public class AttachmentField {
 	public final String value;
 
 	public AttachmentField(String title, String value) {
-		this.title = title;
-		this.value = value;
+		this(false, title, value);
 	}
 	
 	public AttachmentField(boolean _short, String title, String value) {

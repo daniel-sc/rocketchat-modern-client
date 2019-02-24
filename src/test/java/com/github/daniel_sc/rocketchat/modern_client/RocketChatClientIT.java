@@ -1,5 +1,7 @@
 package com.github.daniel_sc.rocketchat.modern_client;
 
+import com.github.daniel_sc.rocketchat.modern_client.request.Attachment;
+import com.github.daniel_sc.rocketchat.modern_client.request.AttachmentField;
 import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
 import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
 import com.github.daniel_sc.rocketchat.modern_client.response.Room;
@@ -232,5 +234,27 @@ public class RocketChatClientIT {
         client.getPermissions().join();
         client.close();
         client.close();
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT)
+    public void testAttachment() {
+        LOG.info("start testAttachment..");
+        Attachment attachment = new Attachment();
+        attachment.color = "#0000ff";
+        attachment.text = "Test attachment message\nand next line wit **mark-down** formatting...";
+        attachment.authorName = "daniel-sc";
+        attachment.authorIcon = "https://avatars2.githubusercontent.com/u/117919?s=460&v=4";
+        attachment.authorLink = "https://github.com/daniel-sc";
+        attachment.title = "Attachment test attachment";
+        attachment.titleLink = "https://www.google.com/?q=Attachment%20test%20attachment";
+        attachment.fields = Collections.singletonList(new AttachmentField("test-field-title", "test-field-value"));
+
+        ChatMessage msg = client.getSubscriptions()
+                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get())
+                .thenCompose(room -> client.sendMessageExtendedParams("TEST modern sdk: with attachment", room.rid, "My-Alias", null, null, Collections.singletonList(attachment)))
+                .join();
+
+        assertNotNull(msg);
+        assertEquals(Collections.emptyMap(), client.futureResults);
     }
 }
