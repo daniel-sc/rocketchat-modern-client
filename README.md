@@ -40,7 +40,7 @@ try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
 Send message with alias and avatar:
 ```java
 try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
-    ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", "https://goo.gl/8afu6d", null).join();
+    ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", "https://goo.gl/8afu6d", null, null).join();
 }
 ```
 
@@ -48,13 +48,13 @@ try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
 Send message with alias and emoji:
 ```java
 try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
-    ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", null, ":e-mail:").join();
+    ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", null, ":e-mail:", null).join();
 }
 ```
 
 _If you send both avatar and emoji, rocket chat client show only avatar._
 ```
-ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", "https://goo.gl/8afu6d", ":e-mail:").join();
+ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", "https://goo.gl/8afu6d", ":e-mail:", null).join();
 ```
 
 Update message:
@@ -76,6 +76,40 @@ try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
     msgStream.dispose();
 }
 ```
+
+Send message with _Attachments_ and _Attachment Fields_:
+```java
+try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+    List<Attachment> attachments = new ArrayList<Attachment>();
+
+    Attachment a1 = new Attachment();        
+    a1.setColor("#0000ff");
+    a1.setIso8601Date("2001-02-03T04:05:06.789Z");
+    a1.setText("Test attachment message\nand next **line** ~~with~~ **mark-down** formatting\n:-) ...");
+    a1.setAuthorName("author");
+    a1.setAuthorIcon("https://avatars2.githubusercontent.com/u/0?s=400&v=4");
+    a1.setAuthorLink("https://github.com/");
+    a1.setTitle("Attachment test A1");
+    a1.setTitleLink("https://www.google.com/?q=Attachment%20test%20A1");
+    attachments.add(a1);
+
+    Attachment a2 = new Attachment();
+    a2.setImageUrl("https://cdn3.iconfinder.com/data/icons/iconshock_developer/linux.png");        
+    attachments.add(a2);
+            
+    Attachment a3 = new Attachment();
+    a3.setColor("#00FF00");        
+    a3.setTitle("Project status");        
+    List<AttachmentField> attachmentFields = new ArrayList<>();
+    attachmentFields.add(new AttachmentField(true, "Status", "New"));
+    attachmentFields.add(new AttachmentField(true, "Priority", "High"));    
+    attachmentFields.add(new AttachmentField(true, "Tags", "Test, Chat"));
+    a3.setFields(attachmentFields);
+    attachments.add(a3);
+    ChatMessage msg = client.sendMessageExtendedParams(message, roomId, rcAlias, rcAvatar, rcEmoji, attachments).join();
+}
+```
+![Message with Attachments and Attachment Fields](img/message_attachments.png)
 
 ## Websocket API
 This client ships with [Tyrus](https://github.com/tyrus-project/tyrus)
