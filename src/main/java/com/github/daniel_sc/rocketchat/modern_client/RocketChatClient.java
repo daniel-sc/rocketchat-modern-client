@@ -10,6 +10,7 @@ import io.reactivex.subjects.PublishSubject;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -103,15 +104,13 @@ public class RocketChatClient implements AutoCloseable {
         return sendMessageExtendedParams(msg, rid, null, null, null, null);
     }
 
-
     public CompletableFuture<ChatMessage> sendMessageExtendedParams(String msg, String rid, String alias, String avatar, String emoji, List<Attachment> attachments) {
         MethodRequest request = new MethodRequest("sendMessage", SendMessageParam.forSendMessage(msg, rid, alias, avatar, emoji, attachments));
         return send(request, failOnError(r -> GSON.fromJson(GSON.toJsonTree(r.result), ChatMessage.class)));
     }
 
     public CompletableFuture<ChatMessage> updateMessage(String msg, String _id) {
-        MethodRequest request = new MethodRequest("updateMessage", SendMessageParam.forUpdate(_id, msg, null, null, null, null, null));
-        return send(request, failOnError(r -> GSON.fromJson(GSON.toJsonTree(r.result), ChatMessage.class)));
+    	return updateMessageWithAttachments(msg, _id, new ArrayList<Attachment>());
     }
     
     public CompletableFuture<ChatMessage> updateMessageWithAttachments(String msg, String _id, List<Attachment> attachments) {
