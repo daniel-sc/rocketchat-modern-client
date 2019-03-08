@@ -110,7 +110,7 @@ public class RocketChatClient implements AutoCloseable {
     }
 
     public CompletableFuture<ChatMessage> updateMessage(String msg, String _id) {
-    	return updateMessageWithAttachments(msg, _id, new ArrayList<Attachment>());
+    	return updateMessageWithAttachments(msg, _id, null);
     }
     
     public CompletableFuture<ChatMessage> updateMessageWithAttachments(String msg, String _id, List<Attachment> attachments) {
