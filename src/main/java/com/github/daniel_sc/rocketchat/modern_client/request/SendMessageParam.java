@@ -32,25 +32,32 @@ public class SendMessageParam {
      */
     public final String emoji;
     
+    /**
+     * Boolean that states whether or not this message should be grouped together with other messages from the same user
+     */
+    public Boolean groupable;
+    
     public List<Attachment> attachments;    
 
-    public SendMessageParam(String msg, String rid, String alias, String avatar, String emoji,
-			List<Attachment> attachments, String msgId) {
+	public SendMessageParam(String msg, String rid, String alias, String avatar, String emoji,
+			Boolean groupable, List<Attachment> attachments, String msgId) {
+		super();
 		this.msg = msg;
 		this.rid = rid;
+		this._id = msgId;
 		this.alias = alias;
 		this.avatar = avatar;
 		this.emoji = emoji;
+		this.groupable = groupable;
 		this.attachments = attachments;
-		this._id = msgId;
 	}
 
-	public static SendMessageParam forSendMessage(String msg, String rid, String alias, String avatar, String emoji, List<Attachment> attachments) {
-        return new SendMessageParam(msg, rid, alias, avatar, emoji, attachments, UUID.randomUUID().toString());
+	public static SendMessageParam forSendMessage(String msg, String rid, String alias, String avatar, String emoji, Boolean groupable, List<Attachment> attachments) {
+        return new SendMessageParam(msg, rid, alias, avatar, emoji, groupable, attachments, UUID.randomUUID().toString());
     }
 
-    public static SendMessageParam forUpdate(String msgId, String msg, String rid, String alias, String avatar, String emoji, List<Attachment> attachments) {
-        return new SendMessageParam(msg, rid, alias, avatar, emoji, attachments, msgId);
+    public static SendMessageParam forUpdate(String msgId, String msg, String rid, String alias, String avatar, String emoji, Boolean groupable, List<Attachment> attachments) {
+        return new SendMessageParam(msg, rid, alias, avatar, emoji, groupable, attachments, msgId);
     }
 
 }
