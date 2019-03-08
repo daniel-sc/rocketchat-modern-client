@@ -1,23 +1,48 @@
 package com.github.daniel_sc.rocketchat.modern_client;
 
-import com.github.daniel_sc.rocketchat.modern_client.request.*;
-import com.github.daniel_sc.rocketchat.modern_client.response.*;
-import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
-import io.reactivex.Observable;
-import io.reactivex.subjects.PublishSubject;
-
-import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.websocket.ClientEndpoint;
+import javax.websocket.ContainerProvider;
+import javax.websocket.OnMessage;
+import javax.websocket.SendResult;
+import javax.websocket.Session;
+
+import com.github.daniel_sc.rocketchat.modern_client.request.Attachment;
+import com.github.daniel_sc.rocketchat.modern_client.request.IRequest;
+import com.github.daniel_sc.rocketchat.modern_client.request.LoginParam;
+import com.github.daniel_sc.rocketchat.modern_client.request.MethodRequest;
+import com.github.daniel_sc.rocketchat.modern_client.request.SendMessageParam;
+import com.github.daniel_sc.rocketchat.modern_client.request.SubscriptionRequest;
+import com.github.daniel_sc.rocketchat.modern_client.request.UnsubscribeRequest;
+import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
+import com.github.daniel_sc.rocketchat.modern_client.response.GenericAnswer;
+import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
+import com.github.daniel_sc.rocketchat.modern_client.response.Room;
+import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
+import com.google.gson.reflect.TypeToken;
+
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
 
 public class RocketChatClient implements AutoCloseable {
 
@@ -110,11 +135,11 @@ public class RocketChatClient implements AutoCloseable {
     }
 
     public CompletableFuture<ChatMessage> updateMessage(String msg, String _id) {
-    	return updateMessageWithAttachments(msg, _id, null);
+    	return updateMessageWithAttachments(msg, _id, null, null);
     }
     
-    public CompletableFuture<ChatMessage> updateMessageWithAttachments(String msg, String _id, List<Attachment> attachments) {
-    	MethodRequest request = new MethodRequest("updateMessage", SendMessageParam.forUpdate(_id, msg, null, null, null, null, null, attachments));
+    public CompletableFuture<ChatMessage> updateMessageWithAttachments(String msg, String _id, Boolean groupable, List<Attachment> attachments) {
+    	MethodRequest request = new MethodRequest("updateMessage", SendMessageParam.forUpdate(_id, msg, null, null, null, null, groupable, attachments));
         return send(request, failOnError(r -> GSON.fromJson(GSON.toJsonTree(r.result), ChatMessage.class)));
     }
 
