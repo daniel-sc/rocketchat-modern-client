@@ -11,15 +11,12 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.websocket.ClientEndpoint;
-import javax.websocket.ContainerProvider;
-import javax.websocket.OnMessage;
-import javax.websocket.SendResult;
-import javax.websocket.Session;
+import javax.websocket.*;
 
 import com.github.daniel_sc.rocketchat.modern_client.request.Attachment;
 import com.github.daniel_sc.rocketchat.modern_client.request.IRequest;
@@ -60,6 +57,7 @@ public class RocketChatClient implements AutoCloseable {
     protected final CompletableFuture<Session> session = new CompletableFuture<>();
     protected final String url;
     protected final CompletableFuture<String> connectResult = new CompletableFuture<>();
+    protected final AtomicBoolean connectionTerminated = new AtomicBoolean(false);
     protected final CompletableFuture<String> login;
     protected final Executor executor;
 
@@ -117,6 +115,9 @@ public class RocketChatClient implements AutoCloseable {
     }
 
     protected <T> CompletableFuture<T> sendDirect(IRequest request, Function<GenericAnswer, T> answerMapper) {
+        if (connectionTerminated.get()) {
+            throw new IllegalStateException("connection already closed!");
+        }
         CompletableFutureWithMapper<T> result = new CompletableFutureWithMapper<>(answerMapper);
         futureResults.put(request.getId(), result);
         String requestString = GSON.toJson(request);
@@ -224,17 +225,6 @@ public class RocketChatClient implements AutoCloseable {
         } catch (IOException | CompletionException | CancellationException e) {
             LOG.log(Level.WARNING, "Could not close session: ", e);
         }
-        futureResults.forEach((id, future) -> {
-            // this can happen for future results of cancelled subscriptions or pong messages..
-            LOG.fine("terminating open result id=" + id + ", future=" + future +
-                    " (you might want to 'join()' some result before closing the client to prevent this)");
-            future.completeExceptionally(new RuntimeException("client closed"));
-        });
-        subscriptionResults.forEach((id, observerAndMapper) -> {
-            LOG.warning("terminating open subscription id=" + id + ", observable=" + observerAndMapper.getObservable() +
-                    " (you might want to dispose all observers before closing the client to prevent this)");
-            observerAndMapper.getSubject().onError(new RuntimeException("client closed"));
-        });
     }
 
     @ClientEndpoint
@@ -270,6 +260,25 @@ public class RocketChatClient implements AutoCloseable {
             } else {
                 LOG.warning("Unhandled message: " + message);
             }
+        }
+
+        @OnClose
+        public void onClose(CloseReason closeReason) {
+            LOG.warning("connection closed: " + closeReason);
+            connectionTerminated.set(true);
+
+            futureResults.forEach((id, future) -> {
+                // this can happen for future results of cancelled subscriptions or pong messages..
+                LOG.fine("terminating open result id=" + id + ", future=" + future +
+                        " (you might want to 'join()' some result before closing the client to prevent this)");
+                future.completeExceptionally(new RuntimeException("connection closed: " + closeReason));
+            });
+            futureResults.clear();
+            subscriptionResults.forEach((id, observerAndMapper) -> {
+                LOG.warning("terminating open subscription id=" + id + ", observable=" + observerAndMapper.getObservable() +
+                        " (you might want to dispose all observers before closing the client to prevent this)");
+                observerAndMapper.getSubject().onError(new RuntimeException("connection closed: " + closeReason));
+            });
         }
 
     }

@@ -13,9 +13,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
@@ -256,5 +258,30 @@ public class RocketChatClientIT {
 
         assertNotNull(msg);
         assertEquals(Collections.emptyMap(), client.futureResults);
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT, expected = RuntimeException.class)
+    public void testConnectionClosedShouldTerminateStream() throws IOException {
+        CompletableFuture<Subscription> subscription = client.getSubscriptions()
+                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get());
+        String rid = subscription.join().rid;
+
+        // wrap in replay, so we can first send a message and won't miss this
+        ConnectableObservable<ChatMessage> msgStream1 = client.streamRoomMessages(rid).take(2).replay();
+        msgStream1.connect();
+        client.session.join().close();
+
+        msgStream1.blockingSubscribe();
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT, expected = CompletionException.class)
+    public void testConnectionClosedShouldFailSendMessage() throws IOException {
+        CompletableFuture<Subscription> subscription = client.getSubscriptions()
+                .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get());
+        String rid = subscription.join().rid;
+
+        client.session.join().close();
+
+        client.sendMessage("testmsg", rid).join();
     }
 }
