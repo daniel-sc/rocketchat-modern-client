@@ -14,12 +14,12 @@ public class Attachment {
 	/**
 	 * The color you want the order on the left side to be, any value background-css supports.
 	 */
-	public String color = "";
+	public String color;
 	
 	/**
 	 * The text to display for this attachment, it is different than the message’s text.
 	 */
-	public String text = "";
+	public String text;
 	
 	/**
 	 * Displays the time next to the text portion.
@@ -31,7 +31,7 @@ public class Attachment {
 	/**
 	 * An image that displays to the left of the text, looks better when this is relatively small.
 	 */
-	public String thumbUrl = "";
+	public String thumbUrl;
 	
 	/**
 	 * Causes the image, audio, and video sections to be hiding when collapsed is true.
@@ -42,30 +42,30 @@ public class Attachment {
 	 * Name of the author.
 	 */
 	@SerializedName("author_name")
-	public String authorName = "";
+	public String authorName;
 	
 	/**
 	 * Providing this makes the author name clickable and points to this link.
 	 */
 	@SerializedName("author_link")
-	public String authorLink = "";
+	public String authorLink;
 	
 	/**
 	 * Displays a tiny icon to the left of the Author’s name.
 	 */
 	@SerializedName("author_icon")
-	public String authorIcon = "";
+	public String authorIcon;
 	
 	/**
 	 * Title to display for this attachment, displays under the author.
 	 */
-	public String title = "";
+	public String title;
 	
 	/**
 	 * Providing this makes the title clickable, pointing to this link.
 	 */
 	@SerializedName("title_link")
-	public String titleLink = "";
+	public String titleLink;
 	
 	/**
 	 * When this is true, a download icon appears and clicking this saves the link to file.
@@ -77,19 +77,19 @@ public class Attachment {
 	 * The image to display, will be "big" and easy to see.
 	 */
 	@SerializedName("image_url")
-	public String imageUrl = "";
+	public String imageUrl;
 	
 	/**
 	 * Audio file to play, only supports what html audio does.
 	 */
 	@SerializedName("audio_url")
-	public String audioUrl = "";
+	public String audioUrl;
 	
 	/**
 	 * Video file to play, only supports what html video does.
 	 */
 	@SerializedName("video_url")
-	public String videoUrl = "";
+	public String videoUrl;
 	
 	/**
 	 * An array of Attachment Field Objects.
