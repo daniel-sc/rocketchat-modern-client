@@ -42,6 +42,7 @@ public class RocketChatClientIT {
 
     @Before
     public void setUp() {
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1)); // prevent rate limit..
         Logger.getLogger(RocketChatClient.class.getName()).setLevel(Level.FINE);
         for (Handler handler : Logger.getLogger("").getHandlers()) {
             handler.setLevel(Level.FINE);

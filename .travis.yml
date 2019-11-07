@@ -1,7 +1,14 @@
-dist: trusty
+dist: bionic
 language: java
-jdk:
-  - oraclejdk8
+
+matrix:
+  include:
+    - jdk: oraclejdk8
+      dist: trusty
+    - jdk: openjdk8
+      dist: trusty
+    - jdk: oraclejdk11
+    - jdk: openjdk11
 
 script: mvn jacoco:prepare-agent test verify jacoco:report -B -Pintegration-test -DrepoToken=$coveralls_repo_token
 
