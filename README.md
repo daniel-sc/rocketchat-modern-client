@@ -17,7 +17,7 @@ Just include the client as Maven dependency in your `pom.xml` via:
 <dependency>
     <groupId>com.github.daniel-sc</groupId>
     <artifactId>rocketchat-modern-client</artifactId>
-    <version>0.0.7</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
