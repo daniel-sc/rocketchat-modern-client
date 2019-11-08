@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/daniel-sc/rocketchat-modern-client.svg?branch=master)](https://travis-ci.org/daniel-sc/rocketchat-modern-client)
 [![Coverage Status](https://coveralls.io/repos/github/daniel-sc/rocketchat-modern-client/badge.svg?branch=master)](https://coveralls.io/github/daniel-sc/rocketchat-modern-client?branch=master)
+![Maven Central](https://img.shields.io/maven-central/v/com.github.daniel-sc/rocketchat-modern-client?color=green)
 
 This project aims to provide a simple java client for the [Rocket.Chat](https://rocket.chat) live chat api.
 The current focus is on ease of usability and solid core functionality over complete method coverage (PRs always welcome!).
@@ -122,7 +123,7 @@ Just update your `pom.xml` as follows:
 <dependency>
     <groupId>com.github.daniel-sc</groupId>
     <artifactId>rocketchat-modern-client</artifactId>
-    <version>0.0.7</version>
+    <version>0.1.0</version>
     <exclusions>
         <exclusion>
             <groupId>org.glassfish.tyrus.bundles</groupId>
