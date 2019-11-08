@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/daniel-sc/rocketchat-modern-client.svg?branch=master)](https://travis-ci.org/daniel-sc/rocketchat-modern-client)
 [![Coverage Status](https://coveralls.io/repos/github/daniel-sc/rocketchat-modern-client/badge.svg?branch=master)](https://coveralls.io/github/daniel-sc/rocketchat-modern-client?branch=master)
-![Maven Central](https://img.shields.io/maven-central/v/com.github.daniel-sc/rocketchat-modern-client?color=green)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.daniel-sc/rocketchat-modern-client?color=green)](https://mvnrepository.com/artifact/com.github.daniel-sc/rocketchat-modern-client)
 
 This project aims to provide a simple java client for the [Rocket.Chat](https://rocket.chat) live chat api.
 The current focus is on ease of usability and solid core functionality over complete method coverage (PRs always welcome!).
