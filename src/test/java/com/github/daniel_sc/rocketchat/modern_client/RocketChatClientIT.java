@@ -1,5 +1,6 @@
 package com.github.daniel_sc.rocketchat.modern_client;
 
+import com.github.daniel_sc.rocketchat.modern_client.api.RestApi;
 import com.github.daniel_sc.rocketchat.modern_client.request.Attachment;
 import com.github.daniel_sc.rocketchat.modern_client.request.AttachmentField;
 import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
@@ -34,6 +35,7 @@ public class RocketChatClientIT {
     private static final String PASSWORD = "testuserrocks";
     private static final String USER = "testuserrocks-0";
     private static final String URL = "wss://open.rocket.chat:443/websocket";
+    private static final String WEB_URL = "https://open.rocket.chat:443/";
     //private static final String URL = "ws://localhost:3000/websocket";
     private static final int DEFAULT_TIMEOUT = 20000;
     public static final String DEFAULT_ROOM = "privatetestgroup-0";
@@ -131,10 +133,41 @@ public class RocketChatClientIT {
                 .join();
 
         ChatMessage receivedMsg = msgStream.blockingFirst();
-        streamDispose.dispose();
 
         assertNotNull(receivedMsg);
         assertEquals(msgText, receivedMsg.msg);
+        assertNull(receivedMsg.editedBy);
+        assertNull(receivedMsg.editedAt);
+        assertFalse(receivedMsg.isModified());
+
+        String msgTextModified = "TEST modern sdk: stream input (modified)";
+        subscription.thenCompose(room -> client.updateMessage(msgTextModified, receivedMsg._id))
+                .join();
+
+        ChatMessage receivedModifiedMsg = msgStream.skip(1).blockingFirst();
+
+        assertNotNull(receivedModifiedMsg);
+        assertEquals(msgTextModified, receivedModifiedMsg.msg);
+        assertNotNull(receivedModifiedMsg.editedBy);
+        assertNotNull(receivedModifiedMsg.editedAt);
+        assertTrue(receivedModifiedMsg.isModified());
+
+        RestApi api = new RestApi(WEB_URL);
+        api.login(USER, PASSWORD);
+        subscription.thenCompose(room -> api.react(receivedModifiedMsg._id, "smile", true))
+                .join();
+
+        ChatMessage receivedReactedMessage = msgStream.skip(2).blockingFirst();
+
+        assertNotNull(receivedReactedMessage);
+        assertEquals(msgTextModified, receivedReactedMessage.msg);
+        assertNotNull(receivedReactedMessage.editedBy);
+        assertNotNull(receivedReactedMessage.editedAt);
+        assertNotNull(receivedReactedMessage.reactions);
+        assertTrue(receivedReactedMessage.isModified());
+        assertEquals(USER, receivedReactedMessage.reactions.get(":smile:").usernames.get(0));
+
+        streamDispose.dispose();
         assertEquals(Collections.emptyMap(), client.subscriptionResults);
     }
 
