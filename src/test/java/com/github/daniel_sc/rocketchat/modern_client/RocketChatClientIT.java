@@ -1,6 +1,5 @@
 package com.github.daniel_sc.rocketchat.modern_client;
 
-import com.github.daniel_sc.rocketchat.modern_client.api.RestApi;
 import com.github.daniel_sc.rocketchat.modern_client.request.Attachment;
 import com.github.daniel_sc.rocketchat.modern_client.request.AttachmentField;
 import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
@@ -152,25 +151,9 @@ public class RocketChatClientIT {
         assertNotNull(receivedModifiedMsg.editedAt);
         assertTrue(receivedModifiedMsg.isModified());
 
-        RestApi api = new RestApi(WEB_URL);
-        api.login(USER, PASSWORD);
-        subscription.thenCompose(room -> api.react(receivedModifiedMsg._id, "smile", true))
-                .join();
-
-        ChatMessage receivedReactedMessage = msgStream.skip(2).blockingFirst();
-
-        assertNotNull(receivedReactedMessage);
-        assertEquals(msgTextModified, receivedReactedMessage.msg);
-        assertNotNull(receivedReactedMessage.editedBy);
-        assertNotNull(receivedReactedMessage.editedAt);
-        assertNotNull(receivedReactedMessage.reactions);
-        assertTrue(receivedReactedMessage.isModified());
-        assertEquals(USER, receivedReactedMessage.reactions.get(":smile:").usernames.get(0));
-
         streamDispose.dispose();
         assertEquals(Collections.emptyMap(), client.subscriptionResults);
     }
-
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testReturnsSameInstance() {
