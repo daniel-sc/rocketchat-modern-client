@@ -34,7 +34,6 @@ public class RocketChatClientIT {
     private static final String PASSWORD = "testuserrocks";
     private static final String USER = "testuserrocks-0";
     private static final String URL = "wss://open.rocket.chat:443/websocket";
-    private static final String WEB_URL = "https://open.rocket.chat:443/";
     //private static final String URL = "ws://localhost:3000/websocket";
     private static final int DEFAULT_TIMEOUT = 20000;
     public static final String DEFAULT_ROOM = "privatetestgroup-0";
