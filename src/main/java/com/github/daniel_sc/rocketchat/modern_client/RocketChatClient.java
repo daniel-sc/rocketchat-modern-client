@@ -18,18 +18,8 @@ import java.util.logging.Logger;
 
 import javax.websocket.*;
 
-import com.github.daniel_sc.rocketchat.modern_client.request.Attachment;
-import com.github.daniel_sc.rocketchat.modern_client.request.IRequest;
-import com.github.daniel_sc.rocketchat.modern_client.request.LoginParam;
-import com.github.daniel_sc.rocketchat.modern_client.request.MethodRequest;
-import com.github.daniel_sc.rocketchat.modern_client.request.SendMessageParam;
-import com.github.daniel_sc.rocketchat.modern_client.request.SubscriptionRequest;
-import com.github.daniel_sc.rocketchat.modern_client.request.UnsubscribeRequest;
-import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
-import com.github.daniel_sc.rocketchat.modern_client.response.GenericAnswer;
-import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
-import com.github.daniel_sc.rocketchat.modern_client.response.Room;
-import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
+import com.github.daniel_sc.rocketchat.modern_client.request.*;
+import com.github.daniel_sc.rocketchat.modern_client.response.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;

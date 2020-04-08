@@ -131,13 +131,28 @@ public class RocketChatClientIT {
                 .join();
 
         ChatMessage receivedMsg = msgStream.blockingFirst();
-        streamDispose.dispose();
 
         assertNotNull(receivedMsg);
         assertEquals(msgText, receivedMsg.msg);
+        assertNull(receivedMsg.editedBy);
+        assertNull(receivedMsg.editedAt);
+        assertFalse(receivedMsg.isModified());
+
+        String msgTextModified = "TEST modern sdk: stream input (modified)";
+        subscription.thenCompose(room -> client.updateMessage(msgTextModified, receivedMsg._id))
+                .join();
+
+        ChatMessage receivedModifiedMsg = msgStream.skip(1).blockingFirst();
+
+        assertNotNull(receivedModifiedMsg);
+        assertEquals(msgTextModified, receivedModifiedMsg.msg);
+        assertNotNull(receivedModifiedMsg.editedBy);
+        assertNotNull(receivedModifiedMsg.editedAt);
+        assertTrue(receivedModifiedMsg.isModified());
+
+        streamDispose.dispose();
         assertEquals(Collections.emptyMap(), client.subscriptionResults);
     }
-
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testReturnsSameInstance() {
