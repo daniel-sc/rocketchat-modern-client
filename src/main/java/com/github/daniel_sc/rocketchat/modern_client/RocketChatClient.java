@@ -1,8 +1,39 @@
 package com.github.daniel_sc.rocketchat.modern_client;
 
+import com.github.daniel_sc.rocketchat.modern_client.request.Attachment;
+import com.github.daniel_sc.rocketchat.modern_client.request.IRequest;
+import com.github.daniel_sc.rocketchat.modern_client.request.LoginOAuthParam;
+import com.github.daniel_sc.rocketchat.modern_client.request.LoginParam;
+import com.github.daniel_sc.rocketchat.modern_client.request.MethodRequest;
+import com.github.daniel_sc.rocketchat.modern_client.request.SendMessageParam;
+import com.github.daniel_sc.rocketchat.modern_client.request.SubscriptionRequest;
+import com.github.daniel_sc.rocketchat.modern_client.request.UnsubscribeRequest;
+import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
+import com.github.daniel_sc.rocketchat.modern_client.response.GenericAnswer;
+import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
+import com.github.daniel_sc.rocketchat.modern_client.response.Room;
+import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
+import com.google.gson.reflect.TypeToken;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+
+import javax.websocket.ClientEndpoint;
+import javax.websocket.CloseReason;
+import javax.websocket.ContainerProvider;
+import javax.websocket.OnClose;
+import javax.websocket.OnMessage;
+import javax.websocket.SendResult;
+import javax.websocket.Session;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -15,21 +46,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.websocket.*;
-
-import com.github.daniel_sc.rocketchat.modern_client.request.*;
-import com.github.daniel_sc.rocketchat.modern_client.response.*;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
-import com.google.gson.reflect.TypeToken;
-
-import io.reactivex.Observable;
-import io.reactivex.subjects.PublishSubject;
 
 public class RocketChatClient implements AutoCloseable {
 
@@ -51,15 +67,54 @@ public class RocketChatClient implements AutoCloseable {
     protected final CompletableFuture<String> login;
     protected final Executor executor;
 
+    @Deprecated
     public RocketChatClient(String url, String user, String password) {
         this(url, user, password, ForkJoinPool.commonPool());
     }
 
+    @Deprecated
     public RocketChatClient(String url, String user, String password, Executor executor) {
         this.url = url;
         this.executor = executor;
-        login = login(user, password);
+        login = login(new LoginParam(user, password));
     }
+
+    public RocketChatClient(String url, LoginParam param) {
+        this.url = url;
+        this.executor = ForkJoinPool.commonPool();
+        login = login(param);
+    }
+
+    public RocketChatClient(String url, LoginParam param, Executor executor) {
+        this.url = url;
+        this.executor = executor;
+        login = login(param);
+    }
+
+    public RocketChatClient(String url, String authtoken) {
+        this.url = url;
+        this.executor = ForkJoinPool.commonPool();
+        login = loginWithToken(authtoken);
+    }
+
+    public RocketChatClient(String url, String authtoken, Executor executor) {
+        this.url = url;
+        this.executor = executor;
+        login = loginWithToken(authtoken);
+    }
+
+    public RocketChatClient(String url, LoginOAuthParam param) {
+        this.url = url;
+        this.executor = ForkJoinPool.commonPool();
+        login = login(param);
+    }
+
+    public RocketChatClient(String url, LoginOAuthParam param, Executor executor) {
+        this.url = url;
+        this.executor = executor;
+        login = login(param);
+    }
+
 
     protected CompletableFuture<String> connect() {
         if (!connectResult.isDone()) {
@@ -76,18 +131,30 @@ public class RocketChatClient implements AutoCloseable {
         return connectResult;
     }
 
-    protected CompletableFuture<String> login(String user, String password) {
-        return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", new LoginParam(user, password)),
-                failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
+    protected CompletableFuture<String> login(LoginParam param) {
+        return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", param),
+            failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
+    }
+
+    private CompletableFuture<String> loginWithToken(String token) {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("resume", token);
+        return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", params),
+            failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
+    }
+
+    private CompletableFuture<String> login(LoginOAuthParam param) {
+        return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", param),
+            failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
     }
 
     public CompletableFuture<List<Subscription>> getSubscriptions() {
         return send(new MethodRequest("subscriptions/get"),
-                failOnError(genericAnswer -> {
-                    JsonElement jsonElement = GSON.toJsonTree(genericAnswer.result);
-                    return GSON.fromJson(jsonElement, new TypeToken<List<Subscription>>() {
-                    }.getType());
-                }));
+            failOnError(genericAnswer -> {
+                JsonElement jsonElement = GSON.toJsonTree(genericAnswer.result);
+                return GSON.fromJson(jsonElement, new TypeToken<List<Subscription>>() {
+                }.getType());
+            }));
     }
 
     public CompletableFuture<List<Room>> getRooms() {
