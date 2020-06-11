@@ -4,6 +4,7 @@ import com.github.daniel_sc.rocketchat.modern_client.request.Attachment;
 import com.github.daniel_sc.rocketchat.modern_client.request.IRequest;
 import com.github.daniel_sc.rocketchat.modern_client.request.LoginOAuthParam;
 import com.github.daniel_sc.rocketchat.modern_client.request.LoginParam;
+import com.github.daniel_sc.rocketchat.modern_client.request.LoginTokenParam;
 import com.github.daniel_sc.rocketchat.modern_client.request.MethodRequest;
 import com.github.daniel_sc.rocketchat.modern_client.request.SendMessageParam;
 import com.github.daniel_sc.rocketchat.modern_client.request.SubscriptionRequest;
@@ -33,7 +34,6 @@ import javax.websocket.Session;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -67,12 +67,10 @@ public class RocketChatClient implements AutoCloseable {
     protected final CompletableFuture<String> login;
     protected final Executor executor;
 
-    @Deprecated
     public RocketChatClient(String url, String user, String password) {
         this(url, user, password, ForkJoinPool.commonPool());
     }
 
-    @Deprecated
     public RocketChatClient(String url, String user, String password, Executor executor) {
         this.url = url;
         this.executor = executor;
@@ -80,9 +78,7 @@ public class RocketChatClient implements AutoCloseable {
     }
 
     public RocketChatClient(String url, LoginParam param) {
-        this.url = url;
-        this.executor = ForkJoinPool.commonPool();
-        login = login(param);
+        this(url, param, ForkJoinPool.commonPool());
     }
 
     public RocketChatClient(String url, LoginParam param, Executor executor) {
@@ -91,22 +87,18 @@ public class RocketChatClient implements AutoCloseable {
         login = login(param);
     }
 
-    public RocketChatClient(String url, String authtoken) {
-        this.url = url;
-        this.executor = ForkJoinPool.commonPool();
-        login = loginWithToken(authtoken);
+    public RocketChatClient(String url, LoginTokenParam param) {
+        this(url, param, ForkJoinPool.commonPool());
     }
 
-    public RocketChatClient(String url, String authtoken, Executor executor) {
+    public RocketChatClient(String url, LoginTokenParam param, Executor executor) {
         this.url = url;
         this.executor = executor;
-        login = loginWithToken(authtoken);
+        login = loginWithToken(param);
     }
 
     public RocketChatClient(String url, LoginOAuthParam param) {
-        this.url = url;
-        this.executor = ForkJoinPool.commonPool();
-        login = login(param);
+        this(url, param, ForkJoinPool.commonPool());
     }
 
     public RocketChatClient(String url, LoginOAuthParam param, Executor executor) {
@@ -114,7 +106,6 @@ public class RocketChatClient implements AutoCloseable {
         this.executor = executor;
         login = login(param);
     }
-
 
     protected CompletableFuture<String> connect() {
         if (!connectResult.isDone()) {
@@ -136,10 +127,8 @@ public class RocketChatClient implements AutoCloseable {
             failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
     }
 
-    private CompletableFuture<String> loginWithToken(String token) {
-        HashMap<String, String> params = new HashMap<>();
-        params.put("resume", token);
-        return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", params),
+    private CompletableFuture<String> loginWithToken(LoginTokenParam param) {
+        return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", param),
             failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
     }
 
