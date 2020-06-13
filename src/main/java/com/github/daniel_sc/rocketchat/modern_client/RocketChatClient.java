@@ -225,7 +225,7 @@ public class RocketChatClient implements AutoCloseable {
         }
 
         @SuppressWarnings({"unused", "SuspiciousMethodCalls"})
-        @OnMessage
+        @OnMessage(maxMessageSize = 4194304) // 4 MiB
         public void onMessage(String message) {
             LOG.fine("Received msg: " + message);
             GenericAnswer msgObject = GSON.fromJson(message, GenericAnswer.class);
