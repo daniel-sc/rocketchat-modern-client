@@ -2,6 +2,7 @@ package com.github.daniel_sc.rocketchat.modern_client;
 
 import com.github.daniel_sc.rocketchat.modern_client.request.Attachment;
 import com.github.daniel_sc.rocketchat.modern_client.request.AttachmentField;
+import com.github.daniel_sc.rocketchat.modern_client.request.LoginParam;
 import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
 import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
 import com.github.daniel_sc.rocketchat.modern_client.response.Room;
@@ -47,7 +48,7 @@ public class RocketChatClientIT {
         for (Handler handler : Logger.getLogger("").getHandlers()) {
             handler.setLevel(Level.FINE);
         }
-        client = new RocketChatClient(URL, USER, PASSWORD, Executors.newFixedThreadPool(2));
+        client = new RocketChatClient(URL, new LoginParam(USER, PASSWORD), Executors.newFixedThreadPool(2));
     }
 
     @After
@@ -223,7 +224,7 @@ public class RocketChatClientIT {
     @Test(timeout = DEFAULT_TIMEOUT, expected = Exception.class)
     public void testConnectToWrongUrl() {
         LOG.info("start testConnectToWrongUrl..");
-        try (RocketChatClient c = new RocketChatClient("ws://localhost:3001", null, null)) {
+        try (RocketChatClient c = new RocketChatClient("ws://localhost:3001", new LoginParam(null, null))) {
             fail("Expect client to fail construction!");
         }
     }
@@ -240,7 +241,7 @@ public class RocketChatClientIT {
     @Test(timeout = DEFAULT_TIMEOUT, expected = Exception.class)
     public void testNullPassword() {
         LOG.info("start testWrongCredentials..");
-        try (RocketChatClient c = new RocketChatClient(URL, USER, null)) {
+        try (RocketChatClient c = new RocketChatClient(URL, new LoginParam(USER, null))) {
             c.sendMessage("test msg", "1").join();
             fail("Expect client to fail construction!");
         }

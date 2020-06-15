@@ -26,21 +26,21 @@ Just include the client as Maven dependency in your `pom.xml` via:
 
 Get subscriptions/rooms:
 ```java
-try(RocketChatClient client = new RocketChatClient("wss://open.rocket.chat:443/websocket", USERNAME, PASSWORD)) {
+try(RocketChatClient client = new RocketChatClient("wss://open.rocket.chat:443/websocket", new LoginParam(USERNAME, PASSWORD))) {
     List<Subscription> subscriptions = client.getSubscriptions().join();
 }
 ```
 
 Send message:
 ```java
-try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+try(RocketChatClient client = new RocketChatClient(URL, new LoginParam(USERNAME, PASSWORD))) {
     ChatMessage msg = client.sendMessage("Your message", roomId).join();
 }
 ```
 
 Send message with alias and avatar:
 ```java
-try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+try(RocketChatClient client = new RocketChatClient(URL, new LoginParam(USERNAME, PASSWORD))) {
     ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", "https://goo.gl/8afu6d", null, null, null).join();
 }
 ```
@@ -48,7 +48,7 @@ try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
 
 Send message with alias and emoji:
 ```java
-try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+try(RocketChatClient client = new RocketChatClient(URL, new LoginParam(USERNAME, PASSWORD))) {
     ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alias", null, ":e-mail:", null, null).join();
 }
 ```
@@ -60,7 +60,7 @@ ChatMessage msg = client.sendMessageExtendedParams("Your message", roomId, "Alia
 
 Update message:
 ```java
-try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+try(RocketChatClient client = new RocketChatClient(URL, new LoginParam(USERNAME, PASSWORD))) {
     ChatMessage chatMessage = client.sendMessage("Your message", roomId).join();
     String edited = "~" + chatMessage.msg + "~"; // strikethrough original message
     new Scanner(System.in).nextLine(); // Wait ...
@@ -70,7 +70,7 @@ try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
 
 Stream/read messages:
 ```java
-try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+try(RocketChatClient client = new RocketChatClient(URL, new LoginParam(USERNAME, PASSWORD))) {
     Observable<ChatMessage> msgStream = client.streamRoomMessages(roomId).join();
     msgStream.forEach(msg -> System.out.println("received msg: " + msg));
     // block thread until you got enough messages.. (or don't use try-with and close client explicitly)
@@ -80,7 +80,7 @@ try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
 
 Send message with _Attachments_ and _Attachment Fields_:
 ```java
-try(RocketChatClient client = new RocketChatClient(URL, USERNAME, PASSWORD)) {
+try(RocketChatClient client = new RocketChatClient(URL, new LoginParam(USERNAME, PASSWORD))) {
     List<Attachment> attachments = new ArrayList<Attachment>();
 
     Attachment a1 = new Attachment();        
