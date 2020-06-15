@@ -1,35 +1,24 @@
 package com.github.daniel_sc.rocketchat.modern_client;
 
+import com.github.daniel_sc.rocketchat.modern_client.request.*;
+import com.github.daniel_sc.rocketchat.modern_client.response.*;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+
+import javax.websocket.*;
 import java.io.IOException;
+import java.io.Reader;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.websocket.*;
-
-import com.github.daniel_sc.rocketchat.modern_client.request.*;
-import com.github.daniel_sc.rocketchat.modern_client.response.*;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
-import com.google.gson.reflect.TypeToken;
-
-import io.reactivex.Observable;
-import io.reactivex.subjects.PublishSubject;
 
 public class RocketChatClient implements AutoCloseable {
 
@@ -225,10 +214,10 @@ public class RocketChatClient implements AutoCloseable {
         }
 
         @SuppressWarnings({"unused", "SuspiciousMethodCalls"})
-        @OnMessage(maxMessageSize = 4194304) // 4 MiB
-        public void onMessage(String message) {
-            LOG.fine("Received msg: " + message);
+        @OnMessage
+        public void onMessage(Reader message) { // Reader (instead of String) to allow for large messages - see https://github.com/daniel-sc/rocketchat-modern-client/issues/13
             GenericAnswer msgObject = GSON.fromJson(message, GenericAnswer.class);
+            LOG.fine("Received msg: " + msgObject);
             if (msgObject.server_id != null) {
                 LOG.fine("sending connect");
                 session.join().getAsyncRemote().sendText("{\"msg\": \"connect\",\"version\": \"1\",\"support\": [\"1\"]}",
@@ -248,7 +237,7 @@ public class RocketChatClient implements AutoCloseable {
                     && subscriptionResults.containsKey(msgObject.fields.get("eventName"))) {
                 subscriptionResults.get(msgObject.fields.get("eventName")).next(msgObject);
             } else {
-                LOG.warning("Unhandled message: " + message);
+                LOG.warning("Unhandled message: " + msgObject);
             }
         }
 
