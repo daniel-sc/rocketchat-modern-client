@@ -22,16 +22,9 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class RocketChatClientIT {
 
@@ -49,10 +42,6 @@ public class RocketChatClientIT {
     @Before
     public void setUp() {
         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1)); // prevent rate limit..
-        Logger.getLogger(RocketChatClient.class.getName()).setLevel(Level.FINE);
-        for (Handler handler : Logger.getLogger("").getHandlers()) {
-            handler.setLevel(Level.FINE);
-        }
         client = new RocketChatClient(URL, new LoginParam(USER, PASSWORD), Executors.newFixedThreadPool(2));
     }
 
