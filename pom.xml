@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.daniel-sc</groupId>
     <artifactId>rocketchat-modern-client</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Client SDK for https://rocket.chat employing Java 8 and reactive style.</description>
@@ -220,7 +219,7 @@
         <connection>scm:git:git://github.com/daniel-sc/rocketchat-modern-client.git</connection>
         <developerConnection>scm:git:git@github.com:daniel-sc/rocketchat-modern-client.git</developerConnection>
         <url>http://github.com/daniel-sc/rocketchat-modern-client/tree/master</url>
-        <tag>HEAD</tag>
+        <tag>rocketchat-modern-client-1.0.2</tag>
     </scm>
 
     <distributionManagement>
