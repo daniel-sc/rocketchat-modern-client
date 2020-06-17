@@ -8,40 +8,9 @@ import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 
 import javax.websocket.*;
-import com.github.daniel_sc.rocketchat.modern_client.request.Attachment;
-import com.github.daniel_sc.rocketchat.modern_client.request.IRequest;
-import com.github.daniel_sc.rocketchat.modern_client.request.LoginOAuthParam;
-import com.github.daniel_sc.rocketchat.modern_client.request.LoginParam;
-import com.github.daniel_sc.rocketchat.modern_client.request.LoginTokenParam;
-import com.github.daniel_sc.rocketchat.modern_client.request.MethodRequest;
-import com.github.daniel_sc.rocketchat.modern_client.request.SendMessageParam;
-import com.github.daniel_sc.rocketchat.modern_client.request.SubscriptionRequest;
-import com.github.daniel_sc.rocketchat.modern_client.request.UnsubscribeRequest;
-import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
-import com.github.daniel_sc.rocketchat.modern_client.response.GenericAnswer;
-import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
-import com.github.daniel_sc.rocketchat.modern_client.response.Room;
-import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
-import com.google.gson.reflect.TypeToken;
-import io.reactivex.Observable;
-import io.reactivex.subjects.PublishSubject;
-
-import javax.websocket.ClientEndpoint;
-import javax.websocket.CloseReason;
-import javax.websocket.ContainerProvider;
-import javax.websocket.OnClose;
-import javax.websocket.OnMessage;
-import javax.websocket.SendResult;
-import javax.websocket.Session;
 import java.io.IOException;
-import java.io.Reader;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -128,26 +97,26 @@ public class RocketChatClient implements AutoCloseable {
 
     protected CompletableFuture<String> login(LoginParam param) {
         return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", param),
-            failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
+                failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
     }
 
     private CompletableFuture<String> loginWithToken(LoginTokenParam param) {
         return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", param),
-            failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
+                failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
     }
 
     private CompletableFuture<String> login(LoginOAuthParam param) {
         return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", param),
-            failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
+                failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
     }
 
     public CompletableFuture<List<Subscription>> getSubscriptions() {
         return send(new MethodRequest("subscriptions/get"),
-            failOnError(genericAnswer -> {
-                JsonElement jsonElement = GSON.toJsonTree(genericAnswer.result);
-                return GSON.fromJson(jsonElement, new TypeToken<List<Subscription>>() {
-                }.getType());
-            }));
+                failOnError(genericAnswer -> {
+                    JsonElement jsonElement = GSON.toJsonTree(genericAnswer.result);
+                    return GSON.fromJson(jsonElement, new TypeToken<List<Subscription>>() {
+                    }.getType());
+                }));
     }
 
     public CompletableFuture<List<Room>> getRooms() {
@@ -280,35 +249,49 @@ public class RocketChatClient implements AutoCloseable {
     @ClientEndpoint
     public class WSClient {
 
+        private final List<String> messageParts = new ArrayList<>();
+
         public WSClient() {
             LOG.fine("created WSClient");
         }
 
         @SuppressWarnings({"unused", "SuspiciousMethodCalls"})
         @OnMessage
-        public void onMessage(Reader message) { // Reader (instead of String) to allow for large messages - see https://github.com/daniel-sc/rocketchat-modern-client/issues/13
-            GenericAnswer msgObject = GSON.fromJson(message, GenericAnswer.class);
-            LOG.fine("Received msg: " + msgObject);
-            if (msgObject.server_id != null) {
-                LOG.fine("sending connect");
-                session.join().getAsyncRemote().sendText("{\"msg\": \"connect\",\"version\": \"1\",\"support\": [\"1\"]}",
-                        sendResult -> LOG.fine("connect ack: " + sendResult.isOK()));
-            } else if ("connected".equals(msgObject.msg)) {
-                connectResult.complete(msgObject.session);
-            } else if ("ping".equals(msgObject.msg)) {
-                session.join().getAsyncRemote().sendText("{\"msg\":\"ping\"}",
-                        result -> LOG.fine("sent pong: " + result.isOK()));
-            } else if (msgObject.id != null && futureResults.containsKey(msgObject.id)) {
-                boolean complete = futureResults.remove(msgObject.id).completeAndMap(msgObject);
-                if (!complete) {
-                    LOG.warning("future result was already completed: " + msgObject);
+        public void onMessage(String message, boolean last) {
+            LOG.fine("Received msg (last part: " + last + "): " + message);
+            if (last) {
+                String completeMessage;
+                synchronized (messageParts) { // not really clear if synchronization is necessary here, better save than sorry..
+                    completeMessage = String.join("", messageParts) + message;
+                    messageParts.clear();
                 }
-            } else if (msgObject.fields != null
-                    && msgObject.fields.get("eventName") != null
-                    && subscriptionResults.containsKey(msgObject.fields.get("eventName"))) {
-                subscriptionResults.get(msgObject.fields.get("eventName")).next(msgObject);
+
+                GenericAnswer msgObject = GSON.fromJson(completeMessage, GenericAnswer.class);
+                if (msgObject.server_id != null) {
+                    LOG.fine("sending connect");
+                    session.join().getAsyncRemote().sendText("{\"msg\": \"connect\",\"version\": \"1\",\"support\": [\"1\"]}",
+                            sendResult -> LOG.fine("connect ack: " + sendResult.isOK()));
+                } else if ("connected".equals(msgObject.msg)) {
+                    connectResult.complete(msgObject.session);
+                } else if ("ping".equals(msgObject.msg)) {
+                    session.join().getAsyncRemote().sendText("{\"msg\":\"ping\"}",
+                            result -> LOG.fine("sent pong: " + result.isOK()));
+                } else if (msgObject.id != null && futureResults.containsKey(msgObject.id)) {
+                    boolean complete = futureResults.remove(msgObject.id).completeAndMap(msgObject);
+                    if (!complete) {
+                        LOG.warning("future result was already completed: " + msgObject);
+                    }
+                } else if (msgObject.fields != null
+                        && msgObject.fields.get("eventName") != null
+                        && subscriptionResults.containsKey(msgObject.fields.get("eventName"))) {
+                    subscriptionResults.get(msgObject.fields.get("eventName")).next(msgObject);
+                } else {
+                    LOG.warning("Unhandled message: " + completeMessage);
+                }
             } else {
-                LOG.warning("Unhandled message: " + msgObject);
+                synchronized (messageParts) {
+                    messageParts.add(message);
+                }
             }
         }
 
