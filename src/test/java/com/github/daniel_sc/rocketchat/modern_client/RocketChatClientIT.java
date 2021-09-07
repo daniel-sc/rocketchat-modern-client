@@ -63,6 +63,17 @@ public class RocketChatClientIT {
     }
 
     @Test(timeout = DEFAULT_TIMEOUT)
+    public void testGetUserId() {
+        LOG.info("start testGetUserId..");
+        assertNull("expected user id to be null immediately after client creation", client.getLoggedInUserId());
+
+        // wait for connect:
+        client.getSubscriptions().join();
+
+        assertEquals("HoiYngmpiY6Y9DD8L", client.getLoggedInUserId());
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT)
     public void testGetRooms() {
         LOG.info("start testGetRooms..");
         List<Room> rooms = client.getRooms().join();
