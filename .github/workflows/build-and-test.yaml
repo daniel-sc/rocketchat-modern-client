@@ -1,0 +1,32 @@
+name: Java CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        java: ['8', '11', '16' ]
+
+    env:
+      CI_NAME: github
+      BRANCH_NAME_OR_REF: ${{ github.head_ref || github.ref }}
+      CI_BUILD_NUMBER: ${{ github.run_id }}
+      CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
+      COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'adopt'
+      - name: Build with Maven
+        run: mvn jacoco:prepare-agent test verify jacoco:report coveralls:report -B -Pintegration-test -DrepoToken=$COVERALLS_SECRET
