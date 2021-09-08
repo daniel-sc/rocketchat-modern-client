@@ -91,6 +91,12 @@
                     <excludes>
                         <exclude>**/IT*.java</exclude>
                     </excludes>
+                    <systemProperties>
+                        <property>
+                            <name>java.util.logging.config.file</name>
+                            <value>src/test/resources/logging.properties</value>
+                        </property>
+                    </systemProperties>
                 </configuration>
             </plugin>
             <plugin>
@@ -108,6 +114,12 @@
                 <configuration>
                     <skipITs>${skip.integration.tests}</skipITs>
                     <argLine>${failsafeArgLine}</argLine>
+                    <systemProperties>
+                        <property>
+                            <name>java.util.logging.config.file</name>
+                            <value>src/test/resources/logging.properties</value>
+                        </property>
+                    </systemProperties>
                 </configuration>
             </plugin>
             <plugin>

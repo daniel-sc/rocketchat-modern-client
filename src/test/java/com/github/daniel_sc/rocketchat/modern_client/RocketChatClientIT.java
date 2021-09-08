@@ -89,7 +89,7 @@ public class RocketChatClientIT {
         LOG.info("start testExtendedSendMessage..");
         ChatMessage msg = client.getSubscriptions()
                 .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get())
-                .thenCompose(room -> client.sendMessageExtendedParams("TEST modern sdk: with alias", room.rid, "My-Alias", null, null, null, null))
+                .thenCompose(room -> client.sendMessageExtendedParams("TEST modern sdk: with alias", room.rid, null, null, null, null, null))
                 .join();
 
         assertNotNull(msg);
@@ -264,7 +264,7 @@ public class RocketChatClientIT {
 
         ChatMessage msg = client.getSubscriptions()
                 .thenApply(subscriptions -> subscriptions.stream().filter(s -> s.name.equalsIgnoreCase(DEFAULT_ROOM)).findFirst().get())
-                .thenCompose(room -> client.sendMessageExtendedParams("TEST modern sdk: with attachment", room.rid, "My-Alias", null, null, null, Collections.singletonList(attachment)))
+                .thenCompose(room -> client.sendMessageExtendedParams("TEST modern sdk: with attachment", room.rid, null, null, null, null, Collections.singletonList(attachment)))
                 .join();
 
         assertNotNull(msg);
