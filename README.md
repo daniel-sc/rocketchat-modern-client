@@ -1,6 +1,6 @@
 # Rocketchat modern client
 
-[![Build Status](https://travis-ci.org/daniel-sc/rocketchat-modern-client.svg?branch=master)](https://travis-ci.org/daniel-sc/rocketchat-modern-client)
+![CI](https://github.com/daniel-sc/rocketchat-modern-client/actions/workflows/build-and-test.yaml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/daniel-sc/rocketchat-modern-client/badge.svg?branch=master)](https://coveralls.io/github/daniel-sc/rocketchat-modern-client?branch=master)
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.daniel-sc/rocketchat-modern-client?color=green)](https://mvnrepository.com/artifact/com.github.daniel-sc/rocketchat-modern-client)
 
