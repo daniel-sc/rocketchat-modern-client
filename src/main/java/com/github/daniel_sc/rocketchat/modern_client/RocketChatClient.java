@@ -37,7 +37,7 @@ public class RocketChatClient implements AutoCloseable {
     protected final String url;
     protected final CompletableFuture<String> connectResult = new CompletableFuture<>();
     protected final AtomicBoolean connectionTerminated = new AtomicBoolean(false);
-    protected final CompletableFuture<String> login;
+    protected final CompletableFuture<LoginResult> login;
     protected final Executor executor;
 
     public RocketChatClient(String url, String user, String password) {
@@ -95,19 +95,28 @@ public class RocketChatClient implements AutoCloseable {
         return connectResult;
     }
 
-    protected CompletableFuture<String> login(LoginParam param) {
-        return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", param),
-                failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
+    /**
+     * @return user id if successfully logged in
+     */
+    public String getLoggedInUserId() {
+        return login.thenApply(loginResult -> loginResult.id).getNow(null);
     }
 
-    private CompletableFuture<String> loginWithToken(LoginTokenParam param) {
-        return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", param),
-                failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
+    protected CompletableFuture<LoginResult> login(LoginParam param) {
+        return loginBase(param);
     }
 
-    private CompletableFuture<String> login(LoginOAuthParam param) {
+    private CompletableFuture<LoginResult> loginWithToken(LoginTokenParam param) {
+        return loginBase(param);
+    }
+
+    private CompletableFuture<LoginResult> login(LoginOAuthParam param) {
+        return loginBase(param);
+    }
+
+    private CompletableFuture<LoginResult> loginBase(Object param) {
         return connect().thenComposeAsync(session -> sendDirect(new MethodRequest("login", param),
-                failOnError(r -> r.result.getAsJsonObject().get("token").getAsString())), executor);
+                failOnError(r -> GSON.fromJson(r.result, LoginResult.class))), executor);
     }
 
     public CompletableFuture<List<Subscription>> getSubscriptions() {
