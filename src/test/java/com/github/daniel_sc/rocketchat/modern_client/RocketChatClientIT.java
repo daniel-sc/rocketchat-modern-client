@@ -139,7 +139,7 @@ public class RocketChatClientIT {
         ChatMessage receivedMsg = msgStream.blockingFirst();
 
         assertNotNull(receivedMsg);
-        assertNotNull(receivedMsg.rid);
+        assertEquals(room.rid, receivedMsg.rid);
         assertEquals(msgText, receivedMsg.msg);
         assertNull(receivedMsg.editedBy);
         assertNull(receivedMsg.editedAt);
