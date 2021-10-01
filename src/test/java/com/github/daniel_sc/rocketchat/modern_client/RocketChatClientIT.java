@@ -133,20 +133,22 @@ public class RocketChatClientIT {
         Disposable streamDispose = msgStream.connect();
 
         String msgText = "TEST modern sdk: stream input";
-        subscription.thenCompose(room -> client.sendMessage(msgText, room.rid))
-                .join();
+        String roomId = subscription.thenCompose(sub -> {
+            client.sendMessage(msgText, sub.rid);
+            return CompletableFuture.completedFuture(sub.rid);
+        }).join();
 
         ChatMessage receivedMsg = msgStream.blockingFirst();
 
         assertNotNull(receivedMsg);
-        assertEquals(room.rid, receivedMsg.rid);
+        assertEquals(roomId, receivedMsg.rid);
         assertEquals(msgText, receivedMsg.msg);
         assertNull(receivedMsg.editedBy);
         assertNull(receivedMsg.editedAt);
         assertFalse(receivedMsg.isModified());
 
         String msgTextModified = "TEST modern sdk: stream input (modified)";
-        subscription.thenCompose(room -> client.updateMessage(msgTextModified, receivedMsg._id))
+        subscription.thenCompose(sub -> client.updateMessage(msgTextModified, receivedMsg._id))
                 .join();
 
         ChatMessage receivedModifiedMsg = msgStream.skip(1).blockingFirst();
