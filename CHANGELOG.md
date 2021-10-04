@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2021-10-04
+
+### Added
+
+- Adding room id to chat message to distinguish direct messages and channel messages - see #21. Thanks to @pjagielski and
+  @dswiecki!
+
+## [1.1.0] - 2021-09-09
+
 ### Added
 
 - Get currently logged-in user id - see #17.
