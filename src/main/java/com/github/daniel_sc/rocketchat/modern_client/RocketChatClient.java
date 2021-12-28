@@ -6,6 +6,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -81,6 +82,30 @@ public class RocketChatClient implements AutoCloseable {
     }
 
     protected CompletableFuture<String> connect() {
+        rawMessages.subscribe(msg -> {
+            GenericAnswer msgObject = GSON.fromJson(msg, GenericAnswer.class);
+            if (msgObject.server_id != null) {
+                LOG.fine("sending connect");
+                session.join().getAsyncRemote().sendText("{\"msg\": \"connect\",\"version\": \"1\",\"support\": [\"1\"]}",
+                        sendResult -> LOG.fine("connect ack: " + sendResult.isOK()));
+            } else if ("connected".equals(msgObject.msg)) {
+                connectResult.complete(msgObject.session);
+            } else if ("ping".equals(msgObject.msg)) {
+                session.join().getAsyncRemote().sendText("{\"msg\":\"ping\"}",
+                        result -> LOG.fine("sent pong: " + result.isOK()));
+            } else if (msgObject.id != null && futureResults.containsKey(msgObject.id)) {
+                boolean complete = futureResults.remove(msgObject.id).completeAndMap(msgObject);
+                if (!complete) {
+                    LOG.warning("future result was already completed: " + msgObject);
+                }
+            } else if (msgObject.fields != null
+                    && msgObject.fields.get("eventName") != null
+                    && subscriptionResults.containsKey(msgObject.fields.get("eventName"))) {
+                subscriptionResults.get(msgObject.fields.get("eventName")).next(msgObject);
+            } else {
+                LOG.warning("Unhandled message: " + msg);
+            }
+        }, e -> LOG.log(Level.SEVERE, "message receiving failed", e));
         if (!connectResult.isDone()) {
             try {
                 LOG.info("connecting to " + url);
@@ -93,6 +118,12 @@ public class RocketChatClient implements AutoCloseable {
             }
         }
         return connectResult;
+    }
+
+    protected Subject<String> rawMessages = PublishSubject.create();
+
+    public Observable<String> getRawMessages() {
+        return rawMessages;
     }
 
     /**
@@ -253,6 +284,7 @@ public class RocketChatClient implements AutoCloseable {
         } catch (IOException | CompletionException | CancellationException e) {
             LOG.log(Level.WARNING, "Could not close session: ", e);
         }
+        rawMessages.onComplete();
     }
 
     @ClientEndpoint
@@ -264,7 +296,7 @@ public class RocketChatClient implements AutoCloseable {
             LOG.fine("created WSClient");
         }
 
-        @SuppressWarnings({"unused", "SuspiciousMethodCalls"})
+        @SuppressWarnings({"unused"})
         @OnMessage
         public void onMessage(String message, boolean last) {
             LOG.fine("Received msg (last part: " + last + "): " + message);
@@ -275,28 +307,8 @@ public class RocketChatClient implements AutoCloseable {
                     messageParts.clear();
                 }
 
-                GenericAnswer msgObject = GSON.fromJson(completeMessage, GenericAnswer.class);
-                if (msgObject.server_id != null) {
-                    LOG.fine("sending connect");
-                    session.join().getAsyncRemote().sendText("{\"msg\": \"connect\",\"version\": \"1\",\"support\": [\"1\"]}",
-                            sendResult -> LOG.fine("connect ack: " + sendResult.isOK()));
-                } else if ("connected".equals(msgObject.msg)) {
-                    connectResult.complete(msgObject.session);
-                } else if ("ping".equals(msgObject.msg)) {
-                    session.join().getAsyncRemote().sendText("{\"msg\":\"ping\"}",
-                            result -> LOG.fine("sent pong: " + result.isOK()));
-                } else if (msgObject.id != null && futureResults.containsKey(msgObject.id)) {
-                    boolean complete = futureResults.remove(msgObject.id).completeAndMap(msgObject);
-                    if (!complete) {
-                        LOG.warning("future result was already completed: " + msgObject);
-                    }
-                } else if (msgObject.fields != null
-                        && msgObject.fields.get("eventName") != null
-                        && subscriptionResults.containsKey(msgObject.fields.get("eventName"))) {
-                    subscriptionResults.get(msgObject.fields.get("eventName")).next(msgObject);
-                } else {
-                    LOG.warning("Unhandled message: " + completeMessage);
-                }
+                rawMessages.onNext(completeMessage);
+
             } else {
                 synchronized (messageParts) {
                     messageParts.add(message);
