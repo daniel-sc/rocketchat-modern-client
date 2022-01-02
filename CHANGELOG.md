@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2022-01-04
+
 ### Added
 
 - Expose all raw messages - see #23, #24.
+- Implementing Livechat Realtime API
+
+### Chore
+- Updated dependencies
 
 ## [1.2.0] - 2021-10-04
 

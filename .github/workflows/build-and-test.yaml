@@ -13,7 +13,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        java: ['8', '11', '16' ]
+        java: ['8', '11', '16', '17' ]
 
     env:
       CI_NAME: github

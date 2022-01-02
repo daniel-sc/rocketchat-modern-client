@@ -7,4 +7,11 @@ import java.util.Date;
 public class DateWrapper {
     @SerializedName("$date")
     public Date date;
+
+    @Override
+    public String toString() {
+        return "DateWrapper{" +
+                "date=" + date +
+                '}';
+    }
 }

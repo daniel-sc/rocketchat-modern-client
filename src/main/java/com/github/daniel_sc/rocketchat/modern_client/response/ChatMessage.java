@@ -1,6 +1,7 @@
 package com.github.daniel_sc.rocketchat.modern_client.response;
 
-import java.util.HashMap;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Map;
 
 public class ChatMessage {
@@ -9,8 +10,11 @@ public class ChatMessage {
     public String rid;
     public String _id;
     public DateWrapper editedAt;
+    @SerializedName("_updatedAt")
+    public DateWrapper updatedAt;
+    public DateWrapper ts;
     public User editedBy;
-    public Map<String,UserList> reactions = new HashMap<>();
+    public Map<String,UserList> reactions;
 
     public ChatMessage(String msg, User u, String rid, DateWrapper editedAt, User editedBy, Map<String,UserList> reactions) {
         this.msg = msg;
