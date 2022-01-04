@@ -2,6 +2,9 @@ package com.github.daniel_sc.rocketchat.modern_client;
 
 import com.github.daniel_sc.rocketchat.modern_client.request.*;
 import com.github.daniel_sc.rocketchat.modern_client.response.*;
+import com.github.daniel_sc.rocketchat.modern_client.response.livechat.InitialData;
+import com.github.daniel_sc.rocketchat.modern_client.response.livechat.LiveChatMessage;
+import com.github.daniel_sc.rocketchat.modern_client.response.livechat.RegisterGuest;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import io.reactivex.Observable;
@@ -11,10 +14,7 @@ import io.reactivex.subjects.Subject;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -82,6 +82,7 @@ public class RocketChatClient implements AutoCloseable {
     }
 
     protected CompletableFuture<String> connect() {
+        //noinspection ResultOfMethodCallIgnored
         rawMessages.subscribe(msg -> {
             GenericAnswer msgObject = GSON.fromJson(msg, GenericAnswer.class);
             if (msgObject.server_id != null) {
@@ -214,6 +215,61 @@ public class RocketChatClient implements AutoCloseable {
                 }.getType())));
     }
 
+    public CompletableFuture<InitialData> livechatGetInitialData(String visitorToken) {
+        MethodRequest request;
+        if (visitorToken != null) {
+            request = new MethodRequest("livechat:getInitialData", visitorToken);
+        } else {
+            request = new MethodRequest("livechat:getInitialData");
+        }
+        return send(request, failOnError(r -> GSON.fromJson(GSON.toJsonTree(r.result), InitialData.class)));
+    }
+
+    public CompletableFuture<Void> livechatSendOfflineMessage(String msg, String name, String email) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("name", name);
+        params.put("message", msg);
+        params.put("email", email);
+
+        return send(new MethodRequest("livechat:sendOfflineMessage", params), failOnError(r -> null));
+    }
+
+    public CompletableFuture<LiveChatMessage> livechatSendMessage(String msg, String roomId, String visitorToken) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("_id", UUID.randomUUID().toString());
+        params.put("rid", roomId);
+        params.put("msg", msg);
+        params.put("token", visitorToken);
+
+        return send(new MethodRequest("sendMessageLivechat", params),
+                failOnError(r -> GSON.fromJson(GSON.toJsonTree(r.result), LiveChatMessage.class)));
+    }
+
+    public CompletableFuture<RegisterGuest> livechatRegisterGuest(String visitorToken, String name, String email, String department) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("token", visitorToken);
+        if (name != null) {
+            params.put("name", name);
+        }
+        if (email != null) {
+            params.put("email", email);
+        }
+        if (department != null) {
+            params.put("department", department);
+        }
+        return send(new MethodRequest("livechat:registerGuest", params),
+                failOnError(r -> GSON.fromJson(GSON.toJsonTree(r.result), RegisterGuest.class)));
+    }
+
+    public Observable<ChatMessage> streamLivechatRoom(String roomName, String visitorToken) {
+        // contrary to docs, we need "visitorToken" (instead of "token") and "stream-room-messages" (instead of "stream-livechat-room") - see https://stackoverflow.com/a/62025100/2544163
+        Function<GenericAnswer, ChatMessage> mapper = r -> GSON.fromJson(GSON.toJsonTree(((List<?>) r.fields.get("args")).get(0)), ChatMessage.class);
+        Map<String, Object> secondParam = new HashMap<>();
+        secondParam.put("useCollection", false);
+        secondParam.put("args", Collections.singletonList(Collections.singletonMap("visitorToken", visitorToken)));
+        return getStream(roomName, new SubscriptionRequest("stream-room-messages", roomName, secondParam), mapper);
+    }
+
     protected <T> Function<GenericAnswer, T> failOnError(Function<GenericAnswer, T> mapper) {
         return result -> {
             if (result.error != null) {
@@ -228,19 +284,24 @@ public class RocketChatClient implements AutoCloseable {
     /**
      * Subscribes to chat room messages. Subscription is automatically managed,
      * i.e. the chat room subscription starts when the first subscriber is attached
-     * to he subject and the subscription is cancelled once the last subscriber of
+     * to the subject and the subscription is cancelled once the last subscriber of
      * the subject is disposed.
      *
      * @param rid room id
      * @return lazily initialized stream of chat room messages
      */
     public Observable<ChatMessage> streamRoomMessages(String rid) {
-        // TODO refactor with further stream methods
+        SubscriptionRequest request = new SubscriptionRequest("stream-room-messages", rid, false);
+        Function<GenericAnswer, ChatMessage> mapper = r -> GSON.fromJson(GSON.toJsonTree(((List<?>) r.fields.get("args")).get(0)), ChatMessage.class);
+
+        return getStream(rid, request, mapper);
+    }
+
+    protected <T> Observable<T> getStream(String rid, SubscriptionRequest request, Function<GenericAnswer, T> mapper) {
         subscriptionResults.computeIfAbsent(rid, roomId -> {
             LOG.fine("creating new subscription observable");
-            SubscriptionRequest request = new SubscriptionRequest("stream-room-messages", rid, false);
-            PublishSubject<ChatMessage> subject = PublishSubject.create();
-            Observable<ChatMessage> observable = subject.doFinally(() -> {
+            PublishSubject<T> subject = PublishSubject.create();
+            Observable<T> observable = subject.doFinally(() -> {
                 LOG.fine("cancelling subscription");
                 subscriptionResults.remove(rid);
                 send(new UnsubscribeRequest(request.getId()), failOnError(Function.identity()))
@@ -263,11 +324,10 @@ public class RocketChatClient implements AutoCloseable {
                         return r;
                     }, executor);
 
-            return new ObservableSubjectWithMapper<>(subject, observable,
-                    r -> GSON.fromJson(GSON.toJsonTree(((List<?>) r.fields.get("args")).get(0)), ChatMessage.class));
+            return new ObservableSubjectWithMapper<>(subject, observable, mapper);
         });
         //noinspection unchecked
-        return (Observable<ChatMessage>) subscriptionResults.get(rid).getObservable();
+        return (Observable<T>) subscriptionResults.get(rid).getObservable();
     }
 
     private static void handleSendResult(SendResult sendResult, CompletableFuture<?> result) {

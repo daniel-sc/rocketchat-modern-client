@@ -7,16 +7,20 @@ import com.github.daniel_sc.rocketchat.modern_client.response.ChatMessage;
 import com.github.daniel_sc.rocketchat.modern_client.response.Permission;
 import com.github.daniel_sc.rocketchat.modern_client.response.Room;
 import com.github.daniel_sc.rocketchat.modern_client.response.Subscription;
+import com.github.daniel_sc.rocketchat.modern_client.response.livechat.InitialData;
+import com.github.daniel_sc.rocketchat.modern_client.response.livechat.RegisterGuest;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.internal.operators.observable.ObservableReplay;
 import io.reactivex.observables.ConnectableObservable;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executors;
@@ -309,4 +313,47 @@ public class RocketChatClientIT {
 
         client.sendMessage("testmsg", rid).join();
     }
+
+    @Test(timeout = DEFAULT_TIMEOUT)
+    public void testLivechatGetInitialData() {
+        InitialData initialData = client.livechatGetInitialData("my-random-visitor-token-1").join();
+        LOG.info("initialData: " + initialData);
+        assertNotNull(initialData.enabled);
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT)
+    public void testLivechatRegisterGuest() {
+        RegisterGuest registerGuest = client.livechatRegisterGuest("my-random-visitor-token-1", "guest-119", "test@test.com", null).join();
+        LOG.info("registerGuest: " + registerGuest);
+    }
+
+    @Ignore("this triggers emails!")
+    @Test(timeout = DEFAULT_TIMEOUT)
+    public void testLivechatSendOfflineMessage() {
+        client.livechatSendOfflineMessage("test offline message", "test name", "some-test-dummy@gmail.com").join();
+    }
+
+    @Test(timeout = DEFAULT_TIMEOUT)
+    public void testLivechatAll() {
+        String visitorToken = UUID.randomUUID().toString();
+        String roomId = UUID.randomUUID().toString();
+
+        client.livechatRegisterGuest(visitorToken, "live chat tester", null, null).join();
+
+        // send first message to create room
+        client.livechatSendMessage("test-msg1", roomId, visitorToken).join();
+
+        // wrap in replay, so we can first send a message and won't miss it
+        ConnectableObservable<ChatMessage> msgStream = ObservableReplay.createFrom(client.streamLivechatRoom(roomId, visitorToken));
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1)); // assure subscription is well set up
+
+        client.livechatSendMessage("test-msg2", roomId, visitorToken).join();
+        Disposable streamDispose = msgStream.connect();
+
+        ChatMessage msg = msgStream.blockingFirst();
+        streamDispose.dispose();
+
+        assertEquals("test-msg2", msg.msg);
+    }
+
 }
