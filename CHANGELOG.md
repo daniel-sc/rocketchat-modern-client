@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.3.0] - 2022-01-04
+## [1.3.1] - 2022-01-05
 
 ### Added
 
@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Chore
 - Updated dependencies
+
+## 1.2.1 / 1.3.0
+These releases are inconsistent and should not be used.
 
 ## [1.2.0] - 2021-10-04
 
