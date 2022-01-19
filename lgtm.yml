@@ -1,0 +1,4 @@
+queries:
+  - include: "*"
+  # this rule does not work well with GSON serialization:
+  - exclude: java/unused-container
