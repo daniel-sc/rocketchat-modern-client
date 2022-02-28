@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2022-02-28
+
+### Fixed
+
+- Send connect message immediately after ws session is open. 
+This fixes hanging/stalled connections.
+
 ## [1.3.1] - 2022-01-05
 
 ### Added

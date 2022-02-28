@@ -85,11 +85,7 @@ public class RocketChatClient implements AutoCloseable {
         //noinspection ResultOfMethodCallIgnored
         rawMessages.subscribe(msg -> {
             GenericAnswer msgObject = GSON.fromJson(msg, GenericAnswer.class);
-            if (msgObject.server_id != null) {
-                LOG.fine("sending connect");
-                session.join().getAsyncRemote().sendText("{\"msg\": \"connect\",\"version\": \"1\",\"support\": [\"1\"]}",
-                        sendResult -> LOG.fine("connect ack: " + sendResult.isOK()));
-            } else if ("connected".equals(msgObject.msg)) {
+            if ("connected".equals(msgObject.msg)) {
                 connectResult.complete(msgObject.session);
             } else if ("ping".equals(msgObject.msg)) {
                 session.join().getAsyncRemote().sendText("{\"msg\":\"ping\"}",
@@ -113,6 +109,9 @@ public class RocketChatClient implements AutoCloseable {
                 WSClient clientEndpoint = new WSClient();
                 session.complete(ContainerProvider.getWebSocketContainer().connectToServer(clientEndpoint, URI.create(url)));
                 LOG.fine("created session: " + session.join());
+                LOG.fine("sending connect");
+                session.join().getAsyncRemote().sendText("{\"msg\": \"connect\",\"version\": \"1\",\"support\": [\"1\"]}",
+                        sendResult -> LOG.fine("connect ack: " + sendResult.isOK()));
             } catch (Exception e) {
                 session.completeExceptionally(e);
                 throw new IllegalStateException(e);

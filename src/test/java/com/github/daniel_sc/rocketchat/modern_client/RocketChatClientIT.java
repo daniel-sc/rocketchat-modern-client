@@ -316,6 +316,7 @@ public class RocketChatClientIT {
 
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testLivechatGetInitialData() {
+        client.rawMessages.subscribe(m -> LOG.info("raw msg: " + m));
         InitialData initialData = client.livechatGetInitialData("my-random-visitor-token-1").join();
         LOG.info("initialData: " + initialData);
         assertNotNull(initialData.enabled);
@@ -333,6 +334,7 @@ public class RocketChatClientIT {
         client.livechatSendOfflineMessage("test offline message", "test name", "some-test-dummy@gmail.com").join();
     }
 
+    @Ignore("disabled on open.rocket.chat: error-omnichannel-is-disabled")
     @Test(timeout = DEFAULT_TIMEOUT)
     public void testLivechatAll() {
         String visitorToken = UUID.randomUUID().toString();
