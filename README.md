@@ -1,9 +1,16 @@
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
+# Deprecated / Unmaintained
+This project does not work with version 7.x of Rocket Chat (https://github.com/daniel-sc/rocketchat-modern-client/issues/32).
+
+The author of this package has no time to maintain this package - so if you are interested, please fork or provide PRs :)
+
+
 # Rocketchat modern client
 
 ![CI](https://github.com/daniel-sc/rocketchat-modern-client/actions/workflows/build-and-test.yaml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/daniel-sc/rocketchat-modern-client/badge.svg?branch=master)](https://coveralls.io/github/daniel-sc/rocketchat-modern-client?branch=master)
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.daniel-sc/rocketchat-modern-client?color=green)](https://mvnrepository.com/artifact/com.github.daniel-sc/rocketchat-modern-client)
-[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/daniel-sc/rocketchat-modern-client.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/daniel-sc/rocketchat-modern-client/context:java)
 
 This project aims to provide a simple java client for the [Rocket.Chat](https://rocket.chat) live chat api.
 The current focus is on ease of usability and solid core functionality over complete method coverage (PRs always welcome!).
